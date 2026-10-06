@@ -2,7 +2,9 @@
 
 Widget de autopresupuesto para construcción modular, en pasos. Es un único archivo (`index.html`) sin dependencias, listo para embeber en una landing de GoHighLevel (GHL) mediante un iframe y enviar los leads a un Workflow de GHL por webhook.
 
-**Pasos:** Superficie → Ambientes (+ A/C) → Terminación → Datos de contacto → Rango estimado en USD + CTA para agendar.
+**Pasos:** Superficie → Ambientes (baño, cocina, dormitorios, living, A/C) → Terminación → Datos de contacto → Rango estimado en USD + aviso de que no es un presupuesto oficial + CTA para agendar.
+
+**URL publicada:** https://florenciaar.github.io/liwa-presupuestador/ (GitHub Pages, rama `gh-pages`).
 
 ## Lógica de precios
 
@@ -14,9 +16,15 @@ Precio     = Costo Base × 1.50
 Rango      = Precio × 0.95  →  Precio × 1.15   (redondeado a centenas)
 ```
 
-Ambientes: baño $2,500 · cocina $2,000 · dormitorio $800. Terminación: Standard ×1.0 · Premium ×1.35.
+Ambientes:
+- Baño: completo $2,500 · tipo oficina $1,250
+- Cocina: completa $2,000 · kitchenette $1,000
+- Dormitorio amoblado: $800 por dormitorio
+- Living: $1,000 (valor estimado, ajustarlo en `PRICING.living`)
 
-Ejemplo: 45 m² cubiertos + 12 m² de semicubierto, baño + cocina, 1 equipo de A/C, Standard → **$37,100 – $44,900 USD**.
+Terminación: Standard ×1.0 · Premium ×1.35.
+
+Ejemplo: 45 m² cubiertos + 12 m² de semicubierto, baño completo + cocina completa, 1 equipo de A/C, Standard → **$37,100 – $44,900 USD**.
 
 ---
 
@@ -43,7 +51,7 @@ Un iframe necesita una URL pública. La opción gratuita más simple es **GitHub
    - Email → `email`
    - Phone → `phone`
    - Source → `source`
-5. *(Recomendado)* Crear campos personalizados del contacto (*Settings → Custom Fields*) y mapearlos: `rango_texto`, `precio_estimado_usd`, `rango_min_usd`, `rango_max_usd`, `m2_cubiertos`, `m2_semicubiertos`, `ambientes`, `aires_acondicionados`, `terminacion`.
+5. *(Recomendado)* Crear campos personalizados del contacto (*Settings → Custom Fields*) y mapearlos: `rango_texto`, `precio_estimado_usd`, `rango_min_usd`, `rango_max_usd`, `m2_cubiertos`, `m2_semicubiertos`, `ambientes`, `bano`, `cocina`, `dormitorios`, `living`, `aires_acondicionados`, `terminacion`.
 6. Agregar las acciones que quieran: **Add Tag** (`presupuestador`), crear una oportunidad en el pipeline, enviar un WhatsApp o email con el `rango_texto`, notificar al equipo, etc.
 7. **Publicar** el workflow.
 
@@ -54,7 +62,7 @@ En el editor de la landing de GHL, agregar un elemento **Custom JS/HTML** (Códi
 | Parámetro | Valor |
 |---|---|
 | `src` base | La URL del paso 1 |
-| `webhook=` | URL del Inbound Webhook (paso 2), **codificada** |
+| `webhook=` *(opcional)* | URL del Inbound Webhook, **codificada**. El webhook de LIWA ya viene configurado por defecto en `CONFIG.webhookUrl`; este parámetro solo hace falta para usar otro |
 | `cta=` | Link del calendario de GHL (*Calendars → Share → Permanent link*), **codificado** |
 | `logo=` *(opcional)* | URL de un PNG/SVG para reemplazar el logo incluido |
 
@@ -93,7 +101,10 @@ Payload de ejemplo:
   "m2_cubiertos": 45,
   "m2_semicubiertos": 12,
   "ambientes": "Baño completo, Cocina completa",
-  "bano": true, "cocina": true, "dormitorio": false,
+  "bano": "Baño completo",
+  "cocina": "Cocina completa",
+  "dormitorios": 0,
+  "living": "No",
   "aires_acondicionados": 1,
   "terminacion": "Standard",
   "costo_base_usd": 26010,

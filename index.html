@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Presupuestador LIWA</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@800&family=Jost:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
   /* ============ TEMA: cambiá estos colores por los de la marca ============ */
   :root {
@@ -23,7 +23,7 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--bg); }
   body {
-    font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-family: "Jost", "Futura", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     color: var(--text);
     min-height: 100vh;
     display: flex;
@@ -43,7 +43,7 @@
   /* Header */
   .header { padding: 24px 28px 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .logo img, .logo svg { height: 52px; width: auto; display: block; }
-  .step-label { font-size: 13px; color: var(--muted); font-weight: 500; white-space: nowrap; }
+  .step-label { font-size: 12px; color: var(--muted); font-weight: 500; white-space: nowrap; text-transform: uppercase; letter-spacing: .12em; }
   /* Progreso */
   .progress-wrap { padding: 16px 28px 0; }
   .progress { height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
@@ -54,8 +54,8 @@
     transition: width .5s cubic-bezier(.65,0,.35,1);
   }
   .dots { display: flex; justify-content: space-between; margin-top: 10px; }
-  .dot { font-size: 11px; color: var(--muted); font-weight: 500; transition: color .3s; }
-  .dot.active { color: var(--ink); font-weight: 700; }
+  .dot { font-size: 11px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: .08em; transition: color .3s; }
+  .dot.active { color: var(--ink); font-weight: 600; }
   /* Pasos */
   .steps { position: relative; padding: 28px; min-height: 380px; }
   .step { display: none; }
@@ -71,7 +71,7 @@
     .step.active, .step.leaving { animation: none; }
     .step.leaving { display: none; }
   }
-  h2 { font-size: 24px; line-height: 1.25; font-weight: 700; margin-bottom: 6px; }
+  h2 { font-size: 26px; line-height: 1.2; font-weight: 600; letter-spacing: -.01em; margin-bottom: 6px; }
   .sub { color: var(--muted); font-size: 15px; line-height: 1.5; margin-bottom: 24px; }
   /* Campos */
   .field { margin-bottom: 18px; }
@@ -113,7 +113,7 @@
   .option-title { font-weight: 600; font-size: 15px; }
   .option-desc { color: var(--muted); font-size: 13px; margin-top: 2px; line-height: 1.4; }
   .check {
-    margin-left: auto; flex: 0 0 22px; height: 22px; border-radius: 6px;
+    margin-left: auto; flex: 0 0 22px; width: 22px; height: 22px; border-radius: 6px;
     border: 1.5px solid var(--border); display: grid; place-items: center; transition: all .2s;
   }
   .option input[type=radio] + .option-card .check { border-radius: 50%; }
@@ -127,6 +127,30 @@
   .badge.gold { background: var(--brand); color: var(--ink); }
   .features { list-style: none; font-size: 13px; color: var(--muted); line-height: 1.7; }
   .features li::before { content: "✓ "; color: var(--brand-2); font-weight: 700; }
+  /* Grupos del paso 2 */
+  .group { margin-bottom: 18px; }
+  .group-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: 10px; }
+  .seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .seg label { cursor: pointer; position: relative; }
+  .seg input { position: absolute; opacity: 0; pointer-events: none; }
+  .seg span {
+    display: flex; flex-direction: column; justify-content: center; height: 100%;
+    padding: 12px 10px; border: 1.5px solid var(--border); border-radius: 12px;
+    text-align: center; font-weight: 600; font-size: 15px; transition: all .2s;
+  }
+  .seg small { display: block; font-weight: 400; font-size: 12px; color: var(--muted); margin-top: 2px; line-height: 1.3; }
+  .seg label:hover span { border-color: var(--ink); }
+  .seg input:checked + span { border-color: var(--brand); background: rgba(243,146,0,.07); box-shadow: 0 0 0 3px rgba(243,146,0,.1); }
+  .seg input:focus-visible + span { box-shadow: 0 0 0 3px rgba(243,146,0,.3); }
+  .group .counter-row { margin-top: 0; }
+  .group .counter-row + .counter-row, .group .option + .counter-row { margin-top: 10px; }
+  /* Disclaimer */
+  .disclaimer {
+    display: flex; gap: 12px; align-items: flex-start;
+    background: rgba(243,146,0,.08); border: 1.5px solid rgba(243,146,0,.35); border-radius: 14px;
+    padding: 14px 16px; font-size: 14px; line-height: 1.5; margin-bottom: 20px;
+  }
+  .disclaimer strong { display: block; margin-bottom: 2px; }
   /* Contador A/C */
   .counter-row {
     display: flex; align-items: center; gap: 14px; margin-top: 12px;
@@ -180,7 +204,13 @@
     .header, .progress-wrap { padding-left: 20px; padding-right: 20px; }
     .steps { padding: 24px 20px; }
     .options.two { grid-template-columns: 1fr; }
-    .dot { font-size: 10px; }
+    .seg { grid-template-columns: 1fr; }
+    .seg span { flex-direction: row; justify-content: space-between; align-items: center; text-align: left; gap: 10px; }
+    .seg small { margin-top: 0; text-align: right; }
+    .dot { font-size: 9px; letter-spacing: .03em; }
+    .counter-row .icon { display: none; }
+    .counter-row { padding: 14px; }
+    .counter { gap: 8px; }
     h2 { font-size: 21px; }
   }
 </style>
@@ -237,41 +267,52 @@
     <!-- PASO 2 -->
     <section class="step" data-step="2">
       <h2>¿Qué ambientes querés incluir?</h2>
-      <p class="sub">Seleccioná todos los que apliquen.</p>
-      <div class="options">
-        <label class="option">
-          <input type="checkbox" name="ambientes" value="bano" />
-          <div class="option-card">
-            <div class="icon">🛁</div>
-            <div><div class="option-title">Baño completo</div><div class="option-desc">Sanitarios, grifería e instalaciones</div></div>
-            <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><path d="M5 12l5 5L20 7"/></svg></div>
-          </div>
-        </label>
-        <label class="option">
-          <input type="checkbox" name="ambientes" value="cocina" />
-          <div class="option-card">
-            <div class="icon">🍳</div>
-            <div><div class="option-title">Cocina completa</div><div class="option-desc">Muebles bajo y sobre mesada + mesada</div></div>
-            <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><path d="M5 12l5 5L20 7"/></svg></div>
-          </div>
-        </label>
-        <label class="option">
-          <input type="checkbox" name="ambientes" value="dormitorio" />
-          <div class="option-card">
-            <div class="icon">🛏️</div>
-            <div><div class="option-title">Dormitorio amoblado</div><div class="option-desc">Muebles de dormitorio y placard</div></div>
-            <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><path d="M5 12l5 5L20 7"/></svg></div>
-          </div>
-        </label>
-      </div>
-      <div class="counter-row">
-        <div class="icon">❄️</div>
-        <div><div class="option-title">Aire acondicionado / Calefacción</div><div class="option-desc">Cantidad de equipos</div></div>
-        <div class="counter">
-          <button type="button" data-ac="-1" aria-label="Quitar equipo">−</button>
-          <span id="acCount">0</span>
-          <button type="button" data-ac="1" aria-label="Agregar equipo">+</button>
+      <p class="sub">Elegí las opciones para tu módulo.</p>
+      <div class="group">
+        <div class="group-title">🛁 Baño</div>
+        <div class="seg">
+          <label><input type="radio" name="bano" value="ninguno" checked /><span>Sin baño</span></label>
+          <label><input type="radio" name="bano" value="completo" /><span>Completo<small>Ducha, sanitarios e instalaciones</small></span></label>
+          <label><input type="radio" name="bano" value="oficina" /><span>Tipo oficina<small>Inodoro y lavatorio</small></span></label>
         </div>
+      </div>
+      <div class="group">
+        <div class="group-title">🍳 Cocina</div>
+        <div class="seg">
+          <label><input type="radio" name="cocina" value="ninguna" checked /><span>Sin cocina</span></label>
+          <label><input type="radio" name="cocina" value="completa" /><span>Completa<small>Como para una casa, con muebles y mesada</small></span></label>
+          <label><input type="radio" name="cocina" value="kitchenette" /><span>Kitchenette<small>Compacta, ideal para monoambiente</small></span></label>
+        </div>
+      </div>
+      <div class="group">
+        <div class="group-title">🏠 Ambientes y equipamiento</div>
+          <div class="counter-row">
+            <div class="icon">🛏️</div>
+            <div><div class="option-title">Dormitorios amoblados</div><div class="option-desc">Muebles de dormitorio y placard</div></div>
+            <div class="counter">
+              <button type="button" data-count="dorm" data-delta="-1" aria-label="Quitar dormitorio">−</button>
+              <span id="count-dorm">0</span>
+              <button type="button" data-count="dorm" data-delta="1" aria-label="Agregar dormitorio">+</button>
+            </div>
+          </div>
+          <label class="option" style="margin-top:10px">
+            <input type="checkbox" name="living" value="living" />
+            <div class="option-card">
+              <div class="icon">🛋️</div>
+              <div><div class="option-title">Living</div><div class="option-desc">Ambiente de estar equipado</div></div>
+              <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><path d="M5 12l5 5L20 7"/></svg></div>
+            </div>
+          </label>
+          <div style="height:10px"></div>
+          <div class="counter-row">
+            <div class="icon">❄️</div>
+            <div><div class="option-title">Aire acondicionado / Calefacción</div><div class="option-desc">Cantidad de equipos</div></div>
+            <div class="counter">
+              <button type="button" data-count="ac" data-delta="-1" aria-label="Quitar equipo">−</button>
+              <span id="count-ac">0</span>
+              <button type="button" data-count="ac" data-delta="1" aria-label="Agregar equipo">+</button>
+            </div>
+          </div>
       </div>
       <div class="actions">
         <button type="button" class="btn btn-ghost" data-prev>←</button>
@@ -353,10 +394,14 @@
         <div class="note">Valores en dólares estadounidenses</div>
       </div>
       <div class="summary" id="summary"></div>
+      <div class="disclaimer">
+        <span>⚠️</span>
+        <div><strong>Este valor no es un presupuesto oficial.</strong>
+        Es una estimación orientativa calculada automáticamente. Para recibir tu presupuesto formal, escribinos y un asesor lo prepara según tu proyecto.</div>
+      </div>
       <p class="explain">
-        Este rango es una <strong>estimación orientativa</strong> basada en la superficie, los ambientes y el nivel de terminación elegidos.
-        Incluye materiales, mano de obra y traslado base. El valor final puede variar según la ubicación del terreno,
-        el diseño definitivo y la disponibilidad de materiales. Agendá una llamada con nuestro equipo para validarlo sin compromiso.
+        El rango se basa en la superficie, los ambientes y el nivel de terminación elegidos, e incluye materiales, mano de obra y traslado base.
+        El valor final puede variar según la ubicación del terreno, el diseño definitivo y la disponibilidad de materiales.
       </p>
       <a class="btn btn-cta" id="ctaBtn" href="#" target="_top" rel="noopener">📅 Agendar llamada para validar presupuesto</a>
       <button type="button" class="restart" id="restartBtn">Hacer otra cotización</button>
@@ -376,7 +421,7 @@
   var params = new URLSearchParams(window.location.search);
   var CONFIG = {
     // URL del "Inbound Webhook" de un Workflow de GoHighLevel
-    webhookUrl: params.get("webhook") || "",
+    webhookUrl: params.get("webhook") || "https://services.leadconnectorhq.com/hooks/ggYd8ySRgfQGSsuS3a3A/webhook-trigger/7af71452-76c0-4f6e-86aa-f4477abc6dcc",
     // Link del calendario de GHL (o página de agendamiento)
     ctaUrl: params.get("cta") || "#",
     // URL del logo (PNG/SVG). Si queda vacío se usa el logo SVG incluido
@@ -389,7 +434,10 @@
   var PRICING = {
     m2Cubierto: 350,
     m2Semi: 180,
-    ambientes: { bano: 2500, cocina: 2000, dormitorio: 800 },
+    bano: { ninguno: 0, completo: 2500, oficina: 1250 },          // tipo oficina = mitad del completo
+    cocina: { ninguna: 0, completa: 2000, kitchenette: 1000 },    // kitchenette = mitad de la completa
+    dormitorio: 800,   // por dormitorio
+    living: 1000,      // ESTIMADO: ajustar al valor real
     terminacion: { standard: 1.0, premium: 1.35 },
     acUnidad: 1100,
     baseFija: 2500,
@@ -399,8 +447,9 @@
   };
 
   var LABELS = {
-    bano: "Baño completo", cocina: "Cocina completa", dormitorio: "Dormitorio amoblado",
-    standard: "Standard", premium: "Premium"
+    bano: { ninguno: "Sin baño", completo: "Baño completo", oficina: "Baño tipo oficina" },
+    cocina: { ninguna: "Sin cocina", completa: "Cocina completa", kitchenette: "Kitchenette" },
+    terminacion: { standard: "Standard", premium: "Premium" }
   };
 
   /* ---------- Estado / DOM ---------- */
@@ -411,7 +460,7 @@
   var stepLabel = document.getElementById("stepLabel");
   var current = 1;
   var total = steps.length;
-  var acCount = 0;
+  var counts = { dorm: 0, ac: 0 };
 
   if (CONFIG.logoUrl) {
     var img = new Image();
@@ -474,13 +523,14 @@
   }
 
   form.addEventListener("click", function (ev) {
-    var t = ev.target.closest("[data-next],[data-prev],[data-ac]");
+    var t = ev.target.closest("[data-next],[data-prev],[data-count]");
     if (!t) return;
     if (t.hasAttribute("data-next")) { if (validate(current)) goTo(current + 1); }
     else if (t.hasAttribute("data-prev")) goTo(current - 1);
     else {
-      acCount = Math.max(0, Math.min(20, acCount + parseInt(t.getAttribute("data-ac"), 10)));
-      document.getElementById("acCount").textContent = acCount;
+      var key = t.getAttribute("data-count");
+      counts[key] = Math.max(0, Math.min(20, counts[key] + parseInt(t.getAttribute("data-delta"), 10)));
+      document.getElementById("count-" + key).textContent = counts[key];
     }
   });
 
@@ -497,18 +547,29 @@
   });
 
   /* ---------- Cálculo ---------- */
+  function radio(name) { return form.querySelector("input[name=" + name + "]:checked").value; }
+
   function getData() {
-    var ambientes = Array.prototype.map.call(form.querySelectorAll("input[name=ambientes]:checked"), function (i) { return i.value; });
-    var terminacion = form.querySelector("input[name=terminacion]:checked").value;
     return {
       m2Cub: num("m2Cub"), m2Semi: num("m2Semi"),
-      ambientes: ambientes, acUnidades: acCount, terminacion: terminacion
+      bano: radio("bano"), cocina: radio("cocina"),
+      dormitorios: counts.dorm, living: form.querySelector("input[name=living]").checked,
+      acUnidades: counts.ac, terminacion: radio("terminacion")
     };
+  }
+
+  function listaAmbientes(d) {
+    var l = [];
+    if (d.bano !== "ninguno") l.push(LABELS.bano[d.bano]);
+    if (d.cocina !== "ninguna") l.push(LABELS.cocina[d.cocina]);
+    if (d.dormitorios) l.push(d.dormitorios + (d.dormitorios === 1 ? " dormitorio" : " dormitorios"));
+    if (d.living) l.push("Living");
+    return l;
   }
 
   function calcular(d) {
     var P = PRICING;
-    var ambientesTotal = d.ambientes.reduce(function (s, a) { return s + (P.ambientes[a] || 0); }, 0);
+    var ambientesTotal = P.bano[d.bano] + P.cocina[d.cocina] + d.dormitorios * P.dormitorio + (d.living ? P.living : 0);
     var adicionales = d.acUnidades * P.acUnidad;
     var factor = P.terminacion[d.terminacion] || 1;
     var costoBase = (d.m2Cub * P.m2Cubierto + d.m2Semi * P.m2Semi + ambientesTotal + adicionales) * factor + P.baseFija;
@@ -571,12 +632,13 @@
       // Datos del presupuesto
       m2_cubiertos: d.m2Cub,
       m2_semicubiertos: d.m2Semi,
-      ambientes: d.ambientes.map(function (a) { return LABELS[a]; }).join(", ") || "Ninguno",
-      bano: d.ambientes.indexOf("bano") > -1,
-      cocina: d.ambientes.indexOf("cocina") > -1,
-      dormitorio: d.ambientes.indexOf("dormitorio") > -1,
+      ambientes: listaAmbientes(d).join(", ") || "Ninguno",
+      bano: LABELS.bano[d.bano],
+      cocina: LABELS.cocina[d.cocina],
+      dormitorios: d.dormitorios,
+      living: d.living ? "Sí" : "No",
       aires_acondicionados: d.acUnidades,
-      terminacion: LABELS[d.terminacion],
+      terminacion: LABELS.terminacion[d.terminacion],
       costo_base_usd: r.costoBase,
       precio_estimado_usd: r.precioEstimado,
       rango_min_usd: r.rangoMin,
@@ -601,9 +663,9 @@
     var rows = [
       ["Superficie cubierta", d.m2Cub + " m²"],
       ["Semicubierto / Galería", d.m2Semi + " m²"],
-      ["Ambientes", d.ambientes.map(function (a) { return LABELS[a]; }).join(", ") || "—"],
+      ["Ambientes", listaAmbientes(d).join(", ") || "—"],
       ["Climatización", d.acUnidades ? d.acUnidades + (d.acUnidades === 1 ? " equipo" : " equipos") : "—"],
-      ["Terminación", LABELS[d.terminacion]]
+      ["Terminación", LABELS.terminacion[d.terminacion]]
     ];
     document.getElementById("summary").innerHTML = rows.map(function (row) {
       return '<div class="summary-row"><span>' + row[0] + "</span><span>" + row[1] + "</span></div>";
@@ -631,8 +693,9 @@
 
   document.getElementById("restartBtn").addEventListener("click", function () {
     form.reset();
-    acCount = 0;
-    document.getElementById("acCount").textContent = "0";
+    counts = { dorm: 0, ac: 0 };
+    document.getElementById("count-dorm").textContent = "0";
+    document.getElementById("count-ac").textContent = "0";
     goTo(1);
   });
 
