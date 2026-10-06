@@ -19,8 +19,8 @@ Rango      = Precio × 0.95  →  Precio × 1.15   (redondeado a centenas)
 Ambientes:
 - Baño: completo $2,500 · tipo oficina $1,250
 - Cocina: completa $2,000 · kitchenette $1,000
-- Dormitorio amoblado: $800 por dormitorio
-- Living: suma como mínimo 10 m² cubiertos (10 × $350 = $3,500)
+- Dormitorio (incluye placard): $800 por dormitorio
+- Living (incluye cortinas y lámpara de techo): suma como mínimo 10 m² cubiertos (10 × $350 = $3,500)
 
 Terminación: Standard ×1.0 · Premium ×1.35.
 
