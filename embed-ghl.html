@@ -1,0 +1,25 @@
+<!--
+  Pegar este bloque en GoHighLevel: Elemento "Custom JS/HTML" (Código personalizado) de la landing.
+  Reemplazá:
+    - TU-USUARIO.github.io/liwa-presupuestador  → la URL donde está publicado index.html
+    - WEBHOOK_URL  → la URL del Inbound Webhook del Workflow de GHL (codificada, ver README)
+    - CALENDAR_URL → el link del calendario de GHL (codificado, ver README)
+-->
+<iframe
+  id="liwa-presupuestador"
+  src="https://TU-USUARIO.github.io/liwa-presupuestador/?webhook=WEBHOOK_URL&cta=CALENDAR_URL"
+  style="width:100%;max-width:700px;height:760px;border:0;display:block;margin:0 auto;overflow:hidden;"
+  scrolling="no"
+  title="Presupuestador LIWA Módulos"
+  allow="clipboard-write"
+></iframe>
+<script>
+  // Ajusta el alto del iframe automáticamente según el paso actual
+  window.addEventListener("message", function (e) {
+    var d = e.data || {};
+    var f = document.getElementById("liwa-presupuestador");
+    if (!f) return;
+    if (d.type === "liwa:height" && d.height) f.style.height = (d.height + 10) + "px";
+    // if (d.type === "liwa:lead") { /* p.ej. disparar un píxel de Meta: fbq('track','Lead'); */ }
+  });
+</script>

@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Presupuestador LIWA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  /* ============ TEMA: cambiá estos colores por los de la marca ============ */
+  :root {
+    --brand: #f39200;        /* naranja LIWA */
+    --brand-2: #e07f00;      /* naranja hover */
+    --ink: #111111;          /* negro LIWA */
+    --bg: #f5f5f3;
+    --card: #ffffff;
+    --text: #1d1f1e;
+    --muted: #6b716e;
+    --border: #e4e4e0;
+    --error: #c0392b;
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); }
+  body {
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 24px 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .widget {
+    width: 100%;
+    max-width: 640px;
+    background: var(--card);
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, .10), 0 2px 8px rgba(0,0,0,.04);
+    overflow: hidden;
+  }
+  /* Header */
+  .header { padding: 24px 28px 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .logo img, .logo svg { height: 52px; width: auto; display: block; }
+  .step-label { font-size: 13px; color: var(--muted); font-weight: 500; white-space: nowrap; }
+  /* Progreso */
+  .progress-wrap { padding: 16px 28px 0; }
+  .progress { height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
+  .progress-bar {
+    height: 100%; width: 20%;
+    background: linear-gradient(90deg, var(--brand-2), var(--brand));
+    border-radius: 99px;
+    transition: width .5s cubic-bezier(.65,0,.35,1);
+  }
+  .dots { display: flex; justify-content: space-between; margin-top: 10px; }
+  .dot { font-size: 11px; color: var(--muted); font-weight: 500; transition: color .3s; }
+  .dot.active { color: var(--ink); font-weight: 700; }
+  /* Pasos */
+  .steps { position: relative; padding: 28px; min-height: 380px; }
+  .step { display: none; }
+  .step.active { display: block; animation: slideIn .45s cubic-bezier(.22,1,.36,1) both; }
+  .step.active.back { animation-name: slideInBack; }
+  .step.leaving { display: block; animation: slideOut .25s ease both; }
+  .step.leaving.back { animation-name: slideOutBack; }
+  @keyframes slideIn { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: none; } }
+  @keyframes slideInBack { from { opacity: 0; transform: translateX(-40px); } to { opacity: 1; transform: none; } }
+  @keyframes slideOut { to { opacity: 0; transform: translateX(-40px); } }
+  @keyframes slideOutBack { to { opacity: 0; transform: translateX(40px); } }
+  @media (prefers-reduced-motion: reduce) {
+    .step.active, .step.leaving { animation: none; }
+    .step.leaving { display: none; }
+  }
+  h2 { font-size: 24px; line-height: 1.25; font-weight: 700; margin-bottom: 6px; }
+  .sub { color: var(--muted); font-size: 15px; line-height: 1.5; margin-bottom: 24px; }
+  /* Campos */
+  .field { margin-bottom: 18px; }
+  .field label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+  .field .hint { font-weight: 400; color: var(--muted); font-size: 13px; }
+  .input-wrap { position: relative; }
+  .input {
+    width: 100%; font: inherit; font-size: 16px;
+    padding: 14px 16px; border: 1.5px solid var(--border); border-radius: 12px;
+    background: #fff; color: var(--text); transition: border-color .2s, box-shadow .2s;
+  }
+  .input:focus { outline: none; border-color: var(--ink); box-shadow: 0 0 0 4px rgba(243,146,0,.1); }
+  .input.has-suffix { padding-right: 56px; }
+  .suffix { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--muted); font-weight: 600; pointer-events: none; }
+  .input.invalid { border-color: var(--error); }
+  .error-msg { color: var(--error); font-size: 13px; margin-top: 6px; display: none; }
+  .error-msg.show { display: block; }
+  /* Opciones (cards) */
+  .options { display: grid; gap: 12px; }
+  .options.two { grid-template-columns: 1fr 1fr; }
+  .option { position: relative; cursor: pointer; display: block; }
+  .option input { position: absolute; opacity: 0; pointer-events: none; }
+  .option-card {
+    display: flex; align-items: center; gap: 14px;
+    padding: 16px; border: 1.5px solid var(--border); border-radius: 14px;
+    transition: border-color .2s, background .2s, transform .15s, box-shadow .2s;
+    height: 100%;
+  }
+  .option:hover .option-card { border-color: var(--ink); transform: translateY(-1px); }
+  .option input:checked + .option-card {
+    border-color: var(--brand); background: rgba(243,146,0,.07);
+    box-shadow: 0 0 0 3px rgba(243,146,0,.1);
+  }
+  .option input:focus-visible + .option-card { box-shadow: 0 0 0 3px rgba(243,146,0,.3); }
+  .icon {
+    flex: 0 0 44px; height: 44px; border-radius: 12px; display: grid; place-items: center;
+    background: var(--bg); font-size: 22px;
+  }
+  .option-title { font-weight: 600; font-size: 15px; }
+  .option-desc { color: var(--muted); font-size: 13px; margin-top: 2px; line-height: 1.4; }
+  .check {
+    margin-left: auto; flex: 0 0 22px; height: 22px; border-radius: 6px;
+    border: 1.5px solid var(--border); display: grid; place-items: center; transition: all .2s;
+  }
+  .option input[type=radio] + .option-card .check { border-radius: 50%; }
+  .option input:checked + .option-card .check { background: var(--brand); border-color: var(--brand); }
+  .check svg { width: 14px; height: 14px; stroke: var(--ink); opacity: 0; transition: opacity .2s; }
+  .option input:checked + .option-card .check svg { opacity: 1; }
+  /* Tarjeta vertical (terminación) */
+  .option-card.vertical { flex-direction: column; align-items: flex-start; gap: 10px; padding: 20px; }
+  .option-card.vertical .check { position: absolute; top: 16px; right: 16px; }
+  .badge { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; padding: 4px 8px; border-radius: 99px; background: var(--ink); color: #fff; }
+  .badge.gold { background: var(--brand); color: var(--ink); }
+  .features { list-style: none; font-size: 13px; color: var(--muted); line-height: 1.7; }
+  .features li::before { content: "✓ "; color: var(--brand-2); font-weight: 700; }
+  /* Contador A/C */
+  .counter-row {
+    display: flex; align-items: center; gap: 14px; margin-top: 12px;
+    padding: 16px; border: 1.5px solid var(--border); border-radius: 14px;
+  }
+  .counter { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .counter button {
+    width: 36px; height: 36px; border-radius: 10px; border: 1.5px solid var(--border);
+    background: #fff; font-size: 20px; line-height: 1; cursor: pointer; color: var(--ink); transition: all .15s;
+  }
+  .counter button:hover { border-color: var(--ink); background: var(--bg); }
+  .counter span { min-width: 22px; text-align: center; font-weight: 700; font-size: 17px; }
+  /* Botones */
+  .actions { display: flex; gap: 12px; margin-top: 28px; }
+  .btn {
+    font: inherit; font-weight: 600; font-size: 16px; cursor: pointer;
+    padding: 15px 22px; border-radius: 12px; border: none; transition: all .2s;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; text-align: center;
+  }
+  .btn-primary { background: var(--brand); color: var(--ink); flex: 1; }
+  .btn-primary:hover { background: var(--brand-2); transform: translateY(-1px); box-shadow: 0 8px 20px rgba(243,146,0,.25); }
+  .btn-primary:disabled { opacity: .6; cursor: wait; transform: none; box-shadow: none; }
+  .btn-ghost { background: transparent; color: var(--muted); border: 1.5px solid var(--border); }
+  .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+  .btn-cta { background: var(--brand); color: var(--ink); width: 100%; padding: 18px; font-size: 17px; }
+  .btn-cta:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(243,146,0,.3); }
+  .spinner { width: 18px; height: 18px; border: 2.5px solid rgba(0,0,0,.2); border-top-color: var(--ink); border-radius: 50%; animation: spin .7s linear infinite; display: none; }
+  .btn.loading .spinner { display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .privacy { font-size: 12px; color: var(--muted); margin-top: 14px; text-align: center; }
+  /* Resultado */
+  .result-hero {
+    text-align: center; padding: 28px 20px; border-radius: 20px; margin: 8px 0 22px;
+    background: var(--ink); color: #fff;
+    border-bottom: 6px solid var(--brand);
+  }
+  .result-hero .eyebrow { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; opacity: .8; font-weight: 600; }
+  .result-range { font-size: clamp(26px, 6.5vw, 38px); font-weight: 800; margin: 10px 0 4px; letter-spacing: -.01em; }
+  .result-range .sep { color: var(--brand); margin: 0 6px; }
+  .result-hero .note { font-size: 13px; opacity: .8; }
+  .summary { border: 1.5px solid var(--border); border-radius: 14px; padding: 6px 18px; margin-bottom: 20px; }
+  .summary-row { display: flex; justify-content: space-between; gap: 12px; padding: 11px 0; font-size: 14px; border-bottom: 1px solid var(--border); }
+  .summary-row:last-child { border-bottom: none; }
+  .summary-row span:first-child { color: var(--muted); }
+  .summary-row span:last-child { font-weight: 600; text-align: right; }
+  .explain { font-size: 14px; color: var(--muted); line-height: 1.6; margin-bottom: 22px; }
+  .restart { display: block; margin: 14px auto 0; background: none; border: none; color: var(--muted); font: inherit; font-size: 14px; cursor: pointer; text-decoration: underline; }
+  @media (max-width: 520px) {
+    body { padding: 0; }
+    .widget { border-radius: 0; box-shadow: none; }
+    .header, .progress-wrap { padding-left: 20px; padding-right: 20px; }
+    .steps { padding: 24px 20px; }
+    .options.two { grid-template-columns: 1fr; }
+    .dot { font-size: 10px; }
+    h2 { font-size: 21px; }
+  }
+</style>
+</head>
+<body>
+<div class="widget" id="liwa-widget">
+  <div class="header">
+    <div class="logo" id="logo" aria-label="LIWA Módulos">
+      <svg viewBox="0 0 200 150" role="img" aria-hidden="true">
+        <path d="M8 46 L100 6 L192 46 L192 144 L8 144 Z" fill="#fff" stroke="#111" stroke-width="7" stroke-linejoin="round"/>
+        <text x="100" y="98" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="800" font-size="62" letter-spacing="-2" fill="#111" transform="scale(1,1.12) translate(0,-10)">LIWA</text>
+        <rect x="8" y="106" width="184" height="38" fill="#f39200" stroke="#111" stroke-width="7" stroke-linejoin="round"/>
+        <text x="100" y="134" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="800" font-size="22" letter-spacing="4" fill="#111">MÓDULOS</text>
+      </svg>
+    </div>
+    <div class="step-label" id="stepLabel">Paso 1 de 5</div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="dots">
+      <span class="dot active">Superficie</span>
+      <span class="dot">Ambientes</span>
+      <span class="dot">Terminación</span>
+      <span class="dot">Datos</span>
+      <span class="dot">Resultado</span>
+    </div>
+  </div>
+
+  <form class="steps" id="form" novalidate>
+    <!-- PASO 1 -->
+    <section class="step active" data-step="1">
+      <h2>¿Cuántos metros cuadrados necesitás?</h2>
+      <p class="sub">Un aproximado alcanza. Podés ajustar los detalles después con un asesor.</p>
+      <div class="field">
+        <label for="m2Cub">Superficie cubierta <span class="hint">· interior</span></label>
+        <div class="input-wrap">
+          <input class="input has-suffix" type="number" id="m2Cub" name="m2_cubiertos" min="0" max="2000" step="1" inputmode="numeric" placeholder="Ej: 45" />
+          <span class="suffix">m²</span>
+        </div>
+        <div class="error-msg" id="errM2">Ingresá al menos 10 m² cubiertos.</div>
+      </div>
+      <div class="field">
+        <label for="m2Semi">Semicubierto / Galería <span class="hint">· opcional</span></label>
+        <div class="input-wrap">
+          <input class="input has-suffix" type="number" id="m2Semi" name="m2_semicubiertos" min="0" max="1000" step="1" inputmode="numeric" placeholder="Ej: 12" />
+          <span class="suffix">m²</span>
+        </div>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn btn-primary" data-next>Continuar →</button>
+      </div>
+    </section>
+
+    <!-- PASO 2 -->
+    <section class="step" data-step="2">
+      <h2>¿Qué ambientes querés incluir?</h2>
+      <p class="sub">Seleccioná todos los que apliquen.</p>
+      <div class="options">
+        <label class="option">
+          <input type="checkbox" name="ambientes" value="bano" />
+          <div class="option-card">
+            <div class="icon">🛁</div>
+            <div><div class="option-title">Baño completo</div><div class="option-desc">Sanitarios, grifería e instalaciones</div></div>
+            <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><path d="M5 12l5 5L20 7"/></svg></div>
+          </div>
+        </label>
+        <label class="option">
+          <input type="checkbox" name="ambientes" value="cocina" />
+          <div class="option-card">
+            <div class="icon">🍳</div>
+            <div><div class="option-title">Cocina completa</div><div class="option-desc">Muebles bajo y sobre mesada + mesada</div></div>
+            <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><path d="M5 12l5 5L20 7"/></svg></div>
+          </div>
+        </label>
+        <label class="option">
+          <input type="checkbox" name="ambientes" value="dormitorio" />
+          <div class="option-card">
+            <div class="icon">🛏️</div>
+            <div><div class="option-title">Dormitorio amoblado</div><div class="option-desc">Muebles de dormitorio y placard</div></div>
+            <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><path d="M5 12l5 5L20 7"/></svg></div>
+          </div>
+        </label>
+      </div>
+      <div class="counter-row">
+        <div class="icon">❄️</div>
+        <div><div class="option-title">Aire acondicionado / Calefacción</div><div class="option-desc">Cantidad de equipos</div></div>
+        <div class="counter">
+          <button type="button" data-ac="-1" aria-label="Quitar equipo">−</button>
+          <span id="acCount">0</span>
+          <button type="button" data-ac="1" aria-label="Agregar equipo">+</button>
+        </div>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn btn-ghost" data-prev>←</button>
+        <button type="button" class="btn btn-primary" data-next>Continuar →</button>
+      </div>
+    </section>
+
+    <!-- PASO 3 -->
+    <section class="step" data-step="3">
+      <h2>Elegí el nivel de terminación</h2>
+      <p class="sub">Define los materiales y la calidad final de tu módulo.</p>
+      <div class="options two">
+        <label class="option">
+          <input type="radio" name="terminacion" value="standard" checked />
+          <div class="option-card vertical">
+            <span class="badge">Standard</span>
+            <div class="option-title">Funcional y eficiente</div>
+            <ul class="features">
+              <li>Aberturas de aluminio</li>
+              <li>Interiores en Durlock</li>
+              <li>Pisos cerámicos</li>
+            </ul>
+            <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><path d="M5 12l5 5L20 7"/></svg></div>
+          </div>
+        </label>
+        <label class="option">
+          <input type="radio" name="terminacion" value="premium" />
+          <div class="option-card vertical">
+            <span class="badge gold">Premium</span>
+            <div class="option-title">Máximo confort</div>
+            <ul class="features">
+              <li>Aberturas PVC con DVH</li>
+              <li>Wall Panels</li>
+              <li>Porcelanato</li>
+            </ul>
+            <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke-width="3"><path d="M5 12l5 5L20 7"/></svg></div>
+          </div>
+        </label>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn btn-ghost" data-prev>←</button>
+        <button type="button" class="btn btn-primary" data-next>Continuar →</button>
+      </div>
+    </section>
+
+    <!-- PASO 4 -->
+    <section class="step" data-step="4">
+      <h2>¡Tu presupuesto está listo!</h2>
+      <p class="sub">Dejanos tus datos para ver el rango estimado y que un asesor pueda validarlo con vos.</p>
+      <div class="field">
+        <label for="nombre">Nombre y apellido</label>
+        <input class="input" type="text" id="nombre" name="nombre" autocomplete="name" placeholder="Tu nombre" />
+        <div class="error-msg" id="errNombre">Ingresá tu nombre.</div>
+      </div>
+      <div class="field">
+        <label for="email">Email</label>
+        <input class="input" type="email" id="email" name="email" autocomplete="email" placeholder="tu@email.com" />
+        <div class="error-msg" id="errEmail">Ingresá un email válido.</div>
+      </div>
+      <div class="field">
+        <label for="whatsapp">WhatsApp</label>
+        <input class="input" type="tel" id="whatsapp" name="whatsapp" autocomplete="tel" inputmode="tel" placeholder="+54 9 11 1234 5678" />
+        <div class="error-msg" id="errWhatsapp">Ingresá un número válido (con código de área).</div>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn btn-ghost" data-prev>←</button>
+        <button type="submit" class="btn btn-primary" id="submitBtn"><span class="spinner"></span><span>Ver mi presupuesto</span></button>
+      </div>
+      <p class="privacy">🔒 Tus datos están protegidos. No compartimos tu información.</p>
+    </section>
+
+    <!-- PASO 5 -->
+    <section class="step" data-step="5">
+      <h2 id="resultTitle">¡Listo!</h2>
+      <p class="sub">Este es el rango estimado para tu proyecto.</p>
+      <div class="result-hero">
+        <div class="eyebrow">Inversión estimada</div>
+        <div class="result-range" id="resultRange">—</div>
+        <div class="note">Valores en dólares estadounidenses</div>
+      </div>
+      <div class="summary" id="summary"></div>
+      <p class="explain">
+        Este rango es una <strong>estimación orientativa</strong> basada en la superficie, los ambientes y el nivel de terminación elegidos.
+        Incluye materiales, mano de obra y traslado base. El valor final puede variar según la ubicación del terreno,
+        el diseño definitivo y la disponibilidad de materiales. Agendá una llamada con nuestro equipo para validarlo sin compromiso.
+      </p>
+      <a class="btn btn-cta" id="ctaBtn" href="#" target="_top" rel="noopener">📅 Agendar llamada para validar presupuesto</a>
+      <button type="button" class="restart" id="restartBtn">Hacer otra cotización</button>
+    </section>
+  </form>
+</div>
+
+<script>
+(function () {
+  /* =====================================================================
+     CONFIGURACIÓN
+     Todo se puede sobreescribir por parámetros en la URL del iframe:
+       ?webhook=https://services.leadconnectorhq.com/hooks/XXXX/webhook-trigger/YYYY
+       &cta=https://tu-dominio.com/agendar
+       &logo=https://tu-dominio.com/logo.png
+     ===================================================================== */
+  var params = new URLSearchParams(window.location.search);
+  var CONFIG = {
+    // URL del "Inbound Webhook" de un Workflow de GoHighLevel
+    webhookUrl: params.get("webhook") || "",
+    // Link del calendario de GHL (o página de agendamiento)
+    ctaUrl: params.get("cta") || "#",
+    // URL del logo (PNG/SVG). Si queda vacío se usa el logo SVG incluido
+    logoUrl: params.get("logo") || "",
+    // Si true, agrega nombre/email/teléfono al link del calendario para precargarlo
+    prefillCalendar: true,
+    source: params.get("source") || "Autopresupuestador LIWA"
+  };
+
+  var PRICING = {
+    m2Cubierto: 350,
+    m2Semi: 180,
+    ambientes: { bano: 2500, cocina: 2000, dormitorio: 800 },
+    terminacion: { standard: 1.0, premium: 1.35 },
+    acUnidad: 1100,
+    baseFija: 2500,
+    margen: 1.5,
+    rangoMin: 0.95,
+    rangoMax: 1.15
+  };
+
+  var LABELS = {
+    bano: "Baño completo", cocina: "Cocina completa", dormitorio: "Dormitorio amoblado",
+    standard: "Standard", premium: "Premium"
+  };
+
+  /* ---------- Estado / DOM ---------- */
+  var form = document.getElementById("form");
+  var steps = Array.prototype.slice.call(document.querySelectorAll(".step"));
+  var dots = document.querySelectorAll(".dot");
+  var bar = document.getElementById("progressBar");
+  var stepLabel = document.getElementById("stepLabel");
+  var current = 1;
+  var total = steps.length;
+  var acCount = 0;
+
+  if (CONFIG.logoUrl) {
+    var img = new Image();
+    img.alt = "LIWA Módulos";
+    img.onload = function () { var l = document.getElementById("logo"); l.innerHTML = ""; l.appendChild(img); };
+    img.src = CONFIG.logoUrl;
+  }
+
+  /* ---------- Navegación ---------- */
+  function goTo(n) {
+    if (n === current || n < 1 || n > total) return;
+    var back = n < current;
+    var from = steps[current - 1];
+    var to = steps[n - 1];
+    from.classList.remove("active", "back");
+    from.classList.add("leaving");
+    if (back) from.classList.add("back");
+    setTimeout(function () {
+      from.classList.remove("leaving", "back");
+      to.classList.toggle("back", back);
+      to.classList.add("active");
+      var first = to.querySelector("input:not([type=checkbox]):not([type=radio])");
+      if (first && window.matchMedia("(min-width: 521px)").matches) first.focus({ preventScroll: true });
+      notifyHeight();
+    }, 230);
+    current = n;
+    bar.style.width = (n / total * 100) + "%";
+    stepLabel.textContent = n === total ? "Resultado" : "Paso " + n + " de " + total;
+    dots.forEach(function (d, i) { d.classList.toggle("active", i === n - 1); });
+    try { window.parent.postMessage({ type: "liwa:step", step: n }, "*"); } catch (e) {}
+    if (window.scrollY > 0) window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function showError(input, errId, show) {
+    if (input) input.classList.toggle("invalid", show);
+    document.getElementById(errId).classList.toggle("show", show);
+  }
+
+  function num(id) { var v = parseFloat(document.getElementById(id).value); return isNaN(v) || v < 0 ? 0 : v; }
+
+  function validate(step) {
+    if (step === 1) {
+      var ok = num("m2Cub") >= 10;
+      showError(document.getElementById("m2Cub"), "errM2", !ok);
+      return ok;
+    }
+    if (step === 4) {
+      var n = document.getElementById("nombre"), e = document.getElementById("email"), w = document.getElementById("whatsapp");
+      var okN = n.value.trim().length >= 2;
+      var okE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e.value.trim());
+      var okW = w.value.replace(/\D/g, "").length >= 8;
+      showError(n, "errNombre", !okN);
+      showError(e, "errEmail", !okE);
+      showError(w, "errWhatsapp", !okW);
+      var firstBad = !okN ? n : !okE ? e : !okW ? w : null;
+      if (firstBad) firstBad.focus();
+      return okN && okE && okW;
+    }
+    return true;
+  }
+
+  form.addEventListener("click", function (ev) {
+    var t = ev.target.closest("[data-next],[data-prev],[data-ac]");
+    if (!t) return;
+    if (t.hasAttribute("data-next")) { if (validate(current)) goTo(current + 1); }
+    else if (t.hasAttribute("data-prev")) goTo(current - 1);
+    else {
+      acCount = Math.max(0, Math.min(20, acCount + parseInt(t.getAttribute("data-ac"), 10)));
+      document.getElementById("acCount").textContent = acCount;
+    }
+  });
+
+  // Enter avanza de paso (excepto en el paso 4, que envía el form)
+  form.addEventListener("keydown", function (ev) {
+    if (ev.key === "Enter" && current < 4 && ev.target.tagName === "INPUT") {
+      ev.preventDefault();
+      if (validate(current)) goTo(current + 1);
+    }
+  });
+
+  form.addEventListener("input", function (ev) {
+    if (ev.target.classList.contains("invalid")) ev.target.classList.remove("invalid");
+  });
+
+  /* ---------- Cálculo ---------- */
+  function getData() {
+    var ambientes = Array.prototype.map.call(form.querySelectorAll("input[name=ambientes]:checked"), function (i) { return i.value; });
+    var terminacion = form.querySelector("input[name=terminacion]:checked").value;
+    return {
+      m2Cub: num("m2Cub"), m2Semi: num("m2Semi"),
+      ambientes: ambientes, acUnidades: acCount, terminacion: terminacion
+    };
+  }
+
+  function calcular(d) {
+    var P = PRICING;
+    var ambientesTotal = d.ambientes.reduce(function (s, a) { return s + (P.ambientes[a] || 0); }, 0);
+    var adicionales = d.acUnidades * P.acUnidad;
+    var factor = P.terminacion[d.terminacion] || 1;
+    var costoBase = (d.m2Cub * P.m2Cubierto + d.m2Semi * P.m2Semi + ambientesTotal + adicionales) * factor + P.baseFija;
+    var precio = costoBase * P.margen;
+    return {
+      costoBase: Math.round(costoBase),
+      precioEstimado: Math.round(precio),
+      rangoMin: roundNice(precio * P.rangoMin),
+      rangoMax: roundNice(precio * P.rangoMax)
+    };
+  }
+
+  function roundNice(v) { return Math.round(v / 100) * 100; } // redondeo a centenas
+  function usd(v) { return "$" + v.toLocaleString("en-US") + " USD"; }
+
+  /* ---------- Envío a GHL ---------- */
+  function sendWebhook(payload) {
+    console.log("[LIWA] Lead capturado:", payload);
+    try { window.parent.postMessage({ type: "liwa:lead", payload: payload }, "*"); } catch (e) {}
+    if (!CONFIG.webhookUrl) {
+      console.warn("[LIWA] Sin webhook configurado (simulación). Agregá ?webhook=URL al iframe.");
+      return Promise.resolve();
+    }
+    var body = JSON.stringify(payload);
+    var timeout = new Promise(function (r) { setTimeout(r, 6000); });
+    // Intento 1: JSON normal. Si CORS lo bloquea, intento 2: no-cors (GHL igual lo recibe).
+    var req = fetch(CONFIG.webhookUrl, { method: "POST", headers: { "Content-Type": "application/json" }, body: body })
+      .then(function (r) { console.log("[LIWA] Webhook OK:", r.status); })
+      .catch(function () {
+        return fetch(CONFIG.webhookUrl, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain" }, body: body })
+          .then(function () { console.log("[LIWA] Webhook enviado (no-cors)."); })
+          .catch(function (err) { console.error("[LIWA] Error enviando webhook:", err); });
+      });
+    return Promise.race([req, timeout]); // nunca bloquear al usuario más de 6 s
+  }
+
+  form.addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    if (current !== 4 || !validate(4)) return;
+    var btn = document.getElementById("submitBtn");
+    btn.disabled = true; btn.classList.add("loading");
+
+    var d = getData();
+    var r = calcular(d);
+    var nombre = document.getElementById("nombre").value.trim();
+    var email = document.getElementById("email").value.trim();
+    var whatsapp = document.getElementById("whatsapp").value.trim();
+    var partes = nombre.split(/\s+/);
+
+    var payload = {
+      // Campos estándar de contacto de GHL
+      first_name: partes[0],
+      last_name: partes.slice(1).join(" "),
+      full_name: nombre,
+      name: nombre,
+      email: email,
+      phone: whatsapp,
+      source: CONFIG.source,
+      tags: ["presupuestador", "terminacion-" + d.terminacion],
+      // Datos del presupuesto
+      m2_cubiertos: d.m2Cub,
+      m2_semicubiertos: d.m2Semi,
+      ambientes: d.ambientes.map(function (a) { return LABELS[a]; }).join(", ") || "Ninguno",
+      bano: d.ambientes.indexOf("bano") > -1,
+      cocina: d.ambientes.indexOf("cocina") > -1,
+      dormitorio: d.ambientes.indexOf("dormitorio") > -1,
+      aires_acondicionados: d.acUnidades,
+      terminacion: LABELS[d.terminacion],
+      costo_base_usd: r.costoBase,
+      precio_estimado_usd: r.precioEstimado,
+      rango_min_usd: r.rangoMin,
+      rango_max_usd: r.rangoMax,
+      rango_texto: usd(r.rangoMin) + " - " + usd(r.rangoMax),
+      pagina: document.referrer || window.location.href,
+      fecha: new Date().toISOString()
+    };
+
+    sendWebhook(payload).then(function () {
+      renderResult(d, r, nombre, email, whatsapp);
+      btn.disabled = false; btn.classList.remove("loading");
+      goTo(5);
+    });
+  });
+
+  /* ---------- Resultado ---------- */
+  function renderResult(d, r, nombre, email, whatsapp) {
+    document.getElementById("resultTitle").textContent = "¡Listo, " + nombre.split(/\s+/)[0] + "!";
+    document.getElementById("resultRange").innerHTML =
+      "$" + r.rangoMin.toLocaleString("en-US") + '<span class="sep">–</span>$' + r.rangoMax.toLocaleString("en-US");
+    var rows = [
+      ["Superficie cubierta", d.m2Cub + " m²"],
+      ["Semicubierto / Galería", d.m2Semi + " m²"],
+      ["Ambientes", d.ambientes.map(function (a) { return LABELS[a]; }).join(", ") || "—"],
+      ["Climatización", d.acUnidades ? d.acUnidades + (d.acUnidades === 1 ? " equipo" : " equipos") : "—"],
+      ["Terminación", LABELS[d.terminacion]]
+    ];
+    document.getElementById("summary").innerHTML = rows.map(function (row) {
+      return '<div class="summary-row"><span>' + row[0] + "</span><span>" + row[1] + "</span></div>";
+    }).join("");
+
+    var cta = document.getElementById("ctaBtn");
+    var url = CONFIG.ctaUrl;
+    if (url && url !== "#" && CONFIG.prefillCalendar) {
+      try {
+        var u = new URL(url);
+        var p = nombre.split(/\s+/);
+        u.searchParams.set("first_name", p[0]);
+        if (p.length > 1) u.searchParams.set("last_name", p.slice(1).join(" "));
+        u.searchParams.set("email", email);
+        u.searchParams.set("phone", whatsapp);
+        url = u.toString();
+      } catch (e) {}
+    }
+    cta.href = url;
+  }
+
+  document.getElementById("ctaBtn").addEventListener("click", function () {
+    try { window.parent.postMessage({ type: "liwa:cta" }, "*"); } catch (e) {}
+  });
+
+  document.getElementById("restartBtn").addEventListener("click", function () {
+    form.reset();
+    acCount = 0;
+    document.getElementById("acCount").textContent = "0";
+    goTo(1);
+  });
+
+  /* ---------- Auto-alto del iframe ---------- */
+  function notifyHeight() {
+    try {
+      var w = document.getElementById("liwa-widget");
+      var cs = getComputedStyle(document.body);
+      var h = w.offsetHeight + parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+      window.parent.postMessage({ type: "liwa:height", height: Math.ceil(h) }, "*");
+    } catch (e) {}
+  }
+  window.addEventListener("load", notifyHeight);
+  window.addEventListener("resize", notifyHeight);
+})();
+</script>
+</body>
+</html>
