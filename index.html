@@ -87,6 +87,8 @@
   .input.has-suffix { padding-right: 56px; }
   .suffix { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--muted); font-weight: 600; pointer-events: none; }
   .input.invalid { border-color: var(--error); }
+  .input[type=number]::-webkit-inner-spin-button, .input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  .input[type=number] { -moz-appearance: textfield; }
   .error-msg { color: var(--error); font-size: 13px; margin-top: 6px; display: none; }
   .error-msg.show { display: block; }
   /* Opciones (cards) */
@@ -191,6 +193,10 @@
   .result-range { font-size: clamp(26px, 6.5vw, 38px); font-weight: 800; margin: 10px 0 4px; letter-spacing: -.01em; }
   .result-range .sep { color: var(--brand); margin: 0 6px; }
   .result-hero .note { font-size: 13px; opacity: .8; }
+  .result-hero .shipping { margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.15); font-size: 15px; }
+  .result-hero .shipping strong { color: var(--brand); font-size: 18px; }
+  .result-hero .shipping small { display: block; opacity: .7; font-size: 12px; margin-top: 2px; }
+  .disclaimer a { color: var(--ink); font-weight: 600; }
   .summary { border: 1.5px solid var(--border); border-radius: 14px; padding: 6px 18px; margin-bottom: 20px; }
   .summary-row { display: flex; justify-content: space-between; gap: 12px; padding: 11px 0; font-size: 14px; border-bottom: 1px solid var(--border); }
   .summary-row:last-child { border-bottom: none; }
@@ -352,6 +358,22 @@
           </div>
         </label>
       </div>
+      <div class="group" style="margin-top:24px">
+        <div class="group-title">🚚 Envío del módulo</div>
+        <div class="field">
+          <label for="localidad">Localidad del terreno</label>
+          <input class="input" type="text" id="localidad" name="localidad" autocomplete="address-level2" placeholder="Ej: Pilar, Buenos Aires" />
+          <div class="error-msg" id="errLocalidad">Ingresá la localidad del terreno.</div>
+        </div>
+        <div class="field">
+          <label for="km">Distancia aproximada <span class="hint">· solo ida, desde nuestra planta</span></label>
+          <div class="input-wrap">
+            <input class="input has-suffix" type="number" id="km" name="km" min="0" max="5000" step="1" inputmode="numeric" placeholder="Ej: 120" />
+            <span class="suffix">km</span>
+          </div>
+          <div class="error-msg" id="errKm">Ingresá la distancia aproximada en km.</div>
+        </div>
+      </div>
       <div class="actions">
         <button type="button" class="btn btn-ghost" data-prev>←</button>
         <button type="button" class="btn btn-primary" data-next>Continuar →</button>
@@ -392,18 +414,20 @@
         <div class="eyebrow">Inversión estimada</div>
         <div class="result-range" id="resultRange">—</div>
         <div class="note">Valores en dólares estadounidenses</div>
+        <div class="shipping" id="resultShipping"></div>
       </div>
       <div class="summary" id="summary"></div>
       <div class="disclaimer">
         <span>⚠️</span>
         <div><strong>Este valor no es un presupuesto oficial.</strong>
-        Es una estimación orientativa calculada automáticamente. Para recibir tu presupuesto formal, escribinos y un asesor lo prepara según tu proyecto.</div>
+        Es una estimación orientativa calculada automáticamente. Para recibir tu presupuesto formal, <a href="#" target="_blank" rel="noopener" class="wa-link">escribinos por WhatsApp</a> y un asesor lo prepara según tu proyecto.</div>
       </div>
       <p class="explain">
-        El rango se basa en la superficie, los ambientes y el nivel de terminación elegidos, e incluye materiales, mano de obra y traslado base.
+        El rango se basa en la superficie, los ambientes y el nivel de terminación elegidos, e incluye materiales y mano de obra.
+        El envío se cotiza aparte en pesos, ida y vuelta.
         El valor final puede variar según la ubicación del terreno, el diseño definitivo y la disponibilidad de materiales.
       </p>
-      <a class="btn btn-cta" id="ctaBtn" href="#" target="_top" rel="noopener">📅 Agendar llamada para validar presupuesto</a>
+      <a class="btn btn-cta wa-link" id="ctaBtn" href="#" target="_blank" rel="noopener">💬 Agendar llamada para validar presupuesto</a>
       <button type="button" class="restart" id="restartBtn">Hacer otra cotización</button>
     </section>
   </form>
@@ -422,12 +446,10 @@
   var CONFIG = {
     // URL del "Inbound Webhook" de un Workflow de GoHighLevel
     webhookUrl: params.get("webhook") || "https://services.leadconnectorhq.com/hooks/ggYd8ySRgfQGSsuS3a3A/webhook-trigger/7af71452-76c0-4f6e-86aa-f4477abc6dcc",
-    // Link del calendario de GHL (o página de agendamiento)
-    ctaUrl: params.get("cta") || "#",
+    // Número de WhatsApp del bot, solo dígitos con código de país (ej: 5491112345678)
+    whatsappNumber: (params.get("wa") || "").replace(/\D/g, ""),
     // URL del logo (PNG/SVG). Si queda vacío se usa el logo SVG incluido
     logoUrl: params.get("logo") || "",
-    // Si true, agrega nombre/email/teléfono al link del calendario para precargarlo
-    prefillCalendar: true,
     source: params.get("source") || "Autopresupuestador LIWA"
   };
 
@@ -437,13 +459,16 @@
     bano: { ninguno: 0, completo: 2500, oficina: 1250 },          // tipo oficina = mitad del completo
     cocina: { ninguna: 0, completa: 2000, kitchenette: 1000 },    // kitchenette = mitad de la completa
     dormitorio: 800,   // por dormitorio
-    living: 1000,      // ESTIMADO: ajustar al valor real
+    livingM2: 10,      // el living suma como mínimo 10 m² cubiertos
     terminacion: { standard: 1.0, premium: 1.35 },
     acUnidad: 1100,
     baseFija: 2500,
     margen: 1.5,
     rangoMin: 0.95,
-    rangoMax: 1.15
+    rangoMax: 1.15,
+    // Envío en ARS, ida y vuelta: el mayor entre el mínimo y (km ida × 2 × precio por km)
+    envioMinimoArs: 1300000,
+    envioArsPorKm: 7000
   };
 
   var LABELS = {
@@ -507,6 +532,14 @@
       showError(document.getElementById("m2Cub"), "errM2", !ok);
       return ok;
     }
+    if (step === 3) {
+      var loc = document.getElementById("localidad"), km = document.getElementById("km");
+      var okL = loc.value.trim().length >= 2;
+      var okK = km.value !== "" && num("km") > 0;
+      showError(loc, "errLocalidad", !okL);
+      showError(km, "errKm", !okK);
+      return okL && okK;
+    }
     if (step === 4) {
       var n = document.getElementById("nombre"), e = document.getElementById("email"), w = document.getElementById("whatsapp");
       var okN = n.value.trim().length >= 2;
@@ -543,7 +576,10 @@
   });
 
   form.addEventListener("input", function (ev) {
-    if (ev.target.classList.contains("invalid")) ev.target.classList.remove("invalid");
+    if (!ev.target.classList.contains("invalid")) return;
+    ev.target.classList.remove("invalid");
+    var f = ev.target.closest(".field"), err = f && f.querySelector(".error-msg");
+    if (err) err.classList.remove("show");
   });
 
   /* ---------- Cálculo ---------- */
@@ -554,7 +590,8 @@
       m2Cub: num("m2Cub"), m2Semi: num("m2Semi"),
       bano: radio("bano"), cocina: radio("cocina"),
       dormitorios: counts.dorm, living: form.querySelector("input[name=living]").checked,
-      acUnidades: counts.ac, terminacion: radio("terminacion")
+      acUnidades: counts.ac, terminacion: radio("terminacion"),
+      localidad: document.getElementById("localidad").value.trim(), km: num("km")
     };
   }
 
@@ -569,7 +606,7 @@
 
   function calcular(d) {
     var P = PRICING;
-    var ambientesTotal = P.bano[d.bano] + P.cocina[d.cocina] + d.dormitorios * P.dormitorio + (d.living ? P.living : 0);
+    var ambientesTotal = P.bano[d.bano] + P.cocina[d.cocina] + d.dormitorios * P.dormitorio + (d.living ? P.livingM2 * P.m2Cubierto : 0);
     var adicionales = d.acUnidades * P.acUnidad;
     var factor = P.terminacion[d.terminacion] || 1;
     var costoBase = (d.m2Cub * P.m2Cubierto + d.m2Semi * P.m2Semi + ambientesTotal + adicionales) * factor + P.baseFija;
@@ -578,11 +615,14 @@
       costoBase: Math.round(costoBase),
       precioEstimado: Math.round(precio),
       rangoMin: roundNice(precio * P.rangoMin),
-      rangoMax: roundNice(precio * P.rangoMax)
+      rangoMax: roundNice(precio * P.rangoMax),
+      envioArs: Math.max(P.envioMinimoArs, d.km * 2 * P.envioArsPorKm)
     };
   }
 
   function roundNice(v) { return Math.round(v / 100) * 100; } // redondeo a centenas
+  function ars(v) { return "ARS " + Math.round(v).toLocaleString("es-AR"); }
+  function esc(t) { return String(t).replace(/[&<>"']/g, function (c) { return "&#" + c.charCodeAt(0) + ";"; }); }
   function usd(v) { return "$" + v.toLocaleString("en-US") + " USD"; }
 
   /* ---------- Envío a GHL ---------- */
@@ -644,6 +684,10 @@
       rango_min_usd: r.rangoMin,
       rango_max_usd: r.rangoMax,
       rango_texto: usd(r.rangoMin) + " - " + usd(r.rangoMax),
+      localidad: d.localidad,
+      distancia_km: d.km,
+      envio_ars: r.envioArs,
+      envio_texto: ars(r.envioArs) + " (ida y vuelta, " + d.km * 2 + " km)",
       pagina: document.referrer || window.location.href,
       fecha: new Date().toISOString()
     };
@@ -660,31 +704,28 @@
     document.getElementById("resultTitle").textContent = "¡Listo, " + nombre.split(/\s+/)[0] + "!";
     document.getElementById("resultRange").innerHTML =
       "$" + r.rangoMin.toLocaleString("en-US") + '<span class="sep">–</span>$' + r.rangoMax.toLocaleString("en-US");
+    document.getElementById("resultShipping").innerHTML =
+      "+ Envío: <strong>" + ars(r.envioArs) + "</strong><small>Ida y vuelta a " + esc(d.localidad) + " (" + d.km * 2 + " km)</small>";
     var rows = [
       ["Superficie cubierta", d.m2Cub + " m²"],
       ["Semicubierto / Galería", d.m2Semi + " m²"],
       ["Ambientes", listaAmbientes(d).join(", ") || "—"],
       ["Climatización", d.acUnidades ? d.acUnidades + (d.acUnidades === 1 ? " equipo" : " equipos") : "—"],
-      ["Terminación", LABELS.terminacion[d.terminacion]]
+      ["Terminación", LABELS.terminacion[d.terminacion]],
+      ["Envío", esc(d.localidad) + " · " + d.km + " km"]
     ];
     document.getElementById("summary").innerHTML = rows.map(function (row) {
       return '<div class="summary-row"><span>' + row[0] + "</span><span>" + row[1] + "</span></div>";
     }).join("");
 
-    var cta = document.getElementById("ctaBtn");
-    var url = CONFIG.ctaUrl;
-    if (url && url !== "#" && CONFIG.prefillCalendar) {
-      try {
-        var u = new URL(url);
-        var p = nombre.split(/\s+/);
-        u.searchParams.set("first_name", p[0]);
-        if (p.length > 1) u.searchParams.set("last_name", p.slice(1).join(" "));
-        u.searchParams.set("email", email);
-        u.searchParams.set("phone", whatsapp);
-        url = u.toString();
-      } catch (e) {}
-    }
-    cta.href = url;
+    var msg = "Hola! Soy " + nombre + ". Hice el presupuesto online y me dio " +
+      usd(r.rangoMin) + " - " + usd(r.rangoMax) + " + envío " + ars(r.envioArs) + " (" + d.m2Cub + " m² cubiertos, " +
+      LABELS.terminacion[d.terminacion] + ", " + d.localidad + "). Quiero agendar una llamada para validarlo.";
+    var waUrl = CONFIG.whatsappNumber
+      ? "https://wa.me/" + CONFIG.whatsappNumber + "?text=" + encodeURIComponent(msg)
+      : "#";
+    if (!CONFIG.whatsappNumber) console.warn("[LIWA] Falta el número de WhatsApp (CONFIG.whatsappNumber o ?wa=).");
+    document.querySelectorAll(".wa-link").forEach(function (a) { a.href = waUrl; });
   }
 
   document.getElementById("ctaBtn").addEventListener("click", function () {

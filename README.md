@@ -2,7 +2,7 @@
 
 Widget de autopresupuesto para construcción modular, en pasos. Es un único archivo (`index.html`) sin dependencias, listo para embeber en una landing de GoHighLevel (GHL) mediante un iframe y enviar los leads a un Workflow de GHL por webhook.
 
-**Pasos:** Superficie → Ambientes (baño, cocina, dormitorios, living, A/C) → Terminación → Datos de contacto → Rango estimado en USD + aviso de que no es un presupuesto oficial + CTA para agendar.
+**Pasos:** Superficie → Ambientes (baño, cocina, dormitorios, living, A/C) → Terminación + envío (localidad y km) → Datos de contacto → Rango estimado en USD + aviso de que no es un presupuesto oficial + CTA para agendar.
 
 **URL publicada:** https://florenciaar.github.io/liwa-presupuestador/ (GitHub Pages, rama `gh-pages`).
 
@@ -20,9 +20,11 @@ Ambientes:
 - Baño: completo $2,500 · tipo oficina $1,250
 - Cocina: completa $2,000 · kitchenette $1,000
 - Dormitorio amoblado: $800 por dormitorio
-- Living: $1,000 (valor estimado, ajustarlo en `PRICING.living`)
+- Living: suma como mínimo 10 m² cubiertos (10 × $350 = $3,500)
 
 Terminación: Standard ×1.0 · Premium ×1.35.
+
+**Envío** (en ARS, se muestra aparte del rango en USD, sin margen): ida y vuelta, el mayor entre **ARS 1.300.000** y **ARS 7.000 × km**. El cliente carga los km de ida y se multiplican por 2. Ej.: 120 km → 240 km × 7.000 = ARS 1.680.000; 50 km → 100 km × 7.000 = ARS 700.000, por lo que se aplica el mínimo de ARS 1.300.000.
 
 Ejemplo: 45 m² cubiertos + 12 m² de semicubierto, baño completo + cocina completa, 1 equipo de A/C, Standard → **$37,100 – $44,900 USD**.
 
@@ -51,7 +53,7 @@ Un iframe necesita una URL pública. La opción gratuita más simple es **GitHub
    - Email → `email`
    - Phone → `phone`
    - Source → `source`
-5. *(Recomendado)* Crear campos personalizados del contacto (*Settings → Custom Fields*) y mapearlos: `rango_texto`, `precio_estimado_usd`, `rango_min_usd`, `rango_max_usd`, `m2_cubiertos`, `m2_semicubiertos`, `ambientes`, `bano`, `cocina`, `dormitorios`, `living`, `aires_acondicionados`, `terminacion`.
+5. *(Recomendado)* Crear campos personalizados del contacto (*Settings → Custom Fields*) y mapearlos: `rango_texto`, `precio_estimado_usd`, `rango_min_usd`, `rango_max_usd`, `m2_cubiertos`, `m2_semicubiertos`, `ambientes`, `bano`, `cocina`, `dormitorios`, `living`, `aires_acondicionados`, `terminacion`, `localidad`, `distancia_km`, `envio_ars`, `envio_texto`.
 6. Agregar las acciones que quieran: **Add Tag** (`presupuestador`), crear una oportunidad en el pipeline, enviar un WhatsApp o email con el `rango_texto`, notificar al equipo, etc.
 7. **Publicar** el workflow.
 
@@ -63,7 +65,7 @@ En el editor de la landing de GHL, agregar un elemento **Custom JS/HTML** (Códi
 |---|---|
 | `src` base | La URL del paso 1 |
 | `webhook=` *(opcional)* | URL del Inbound Webhook, **codificada**. El webhook de LIWA ya viene configurado por defecto en `CONFIG.webhookUrl`; este parámetro solo hace falta para usar otro |
-| `cta=` | Link del calendario de GHL (*Calendars → Share → Permanent link*), **codificado** |
+| `wa=` | Número de WhatsApp del bot, con código de país y sin espacios ni `+` (ej: `5491112345678`). También se puede fijar en `CONFIG.whatsappNumber` |
 | `logo=` *(opcional)* | URL de un PNG/SVG para reemplazar el logo incluido |
 
 Para codificar una URL, en la consola del navegador (F12): `encodeURIComponent("https://services.leadconnectorhq.com/hooks/...")`.
@@ -71,7 +73,7 @@ Para codificar una URL, en la consola del navegador (F12): `encodeURIComponent("
 Ejemplo final:
 
 ```
-https://usuario.github.io/liwa-presupuestador/?webhook=https%3A%2F%2Fservices.leadconnectorhq.com%2Fhooks%2FABC%2Fwebhook-trigger%2FXYZ&cta=https%3A%2F%2Fapi.leadconnectorhq.com%2Fwidget%2Fbooking%2FCAL123
+https://florenciaar.github.io/liwa-presupuestador/?wa=5491112345678
 ```
 
 El script incluido en `embed-ghl.html` ajusta el alto del iframe en cada paso, así no aparecen barras de scroll.
@@ -105,6 +107,10 @@ Payload de ejemplo:
   "cocina": "Cocina completa",
   "dormitorios": 0,
   "living": "No",
+  "localidad": "Pilar, Buenos Aires",
+  "distancia_km": 120,
+  "envio_ars": 1680000,
+  "envio_texto": "ARS 1.680.000 (ida y vuelta, 240 km)",
   "aires_acondicionados": 1,
   "terminacion": "Standard",
   "costo_base_usd": 26010,
@@ -117,7 +123,7 @@ Payload de ejemplo:
 }
 ```
 
-El botón "Agendar llamada" abre el calendario en la página completa (`target="_top"`) y le pasa `first_name`, `last_name`, `email` y `phone` en la URL para que el formulario de reserva de GHL ya aparezca precargado.
+El botón "Agendar llamada" (y el link "escribinos por WhatsApp" del disclaimer) abre un chat de WhatsApp con el bot, con un mensaje precargado que incluye nombre, rango en USD, envío, m², terminación y localidad.
 
 ## Personalizar
 
