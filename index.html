@@ -5,20 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Presupuestador LIWA</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@800&family=Jost:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap" rel="stylesheet" />
 <style>
-  /* ============ TEMA: cambiá estos colores por los de la marca ============ */
+  /* ============ TEMA ============ */
   :root {
-    --brand: #f39200;        /* naranja LIWA */
-    --brand-2: #e07f00;      /* naranja hover */
-    --ink: #111111;          /* negro LIWA */
-    --bg: #f5f5f3;
-    --card: #ffffff;
-    --text: #1d1f1e;
-    --muted: #6b716e;
-    --border: #e4e4e0;
-    --error: #c0392b;
-    --radius: 16px;
+    --brand: #f39a3c;        /* naranja */
+    --brand-2: #ffad57;      /* naranja hover */
+    --bg: #1b1b1b;           /* fondo de la página */
+    --card: #151515;         /* panel */
+    --field: #0f0f0f;        /* campos */
+    --text: #ececec;
+    --muted: #9a9a9a;
+    --label: #b5b5b5;
+    --border: #333333;
+    --border-strong: #4a4a4a;
+    --error: #ff6b5b;
+    --radius: 2px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--bg); }
@@ -36,28 +38,21 @@
     width: 100%;
     max-width: 640px;
     background: var(--card);
-    border-radius: 24px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, .10), 0 2px 8px rgba(0,0,0,.04);
-    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
   }
   /* Header */
-  .header { padding: 24px 28px 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-  .logo img, .logo svg { height: 52px; width: auto; display: block; }
-  .step-label { font-size: 12px; color: var(--muted); font-weight: 500; white-space: nowrap; text-transform: uppercase; letter-spacing: .12em; }
+  .header { padding: 26px 32px 0; display: flex; align-items: center; justify-content: flex-end; }
+  .step-label { font-size: 11px; color: var(--muted); font-weight: 500; white-space: nowrap; text-transform: uppercase; letter-spacing: .14em; }
   /* Progreso */
-  .progress-wrap { padding: 16px 28px 0; }
-  .progress { height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
-  .progress-bar {
-    height: 100%; width: 20%;
-    background: linear-gradient(90deg, var(--brand-2), var(--brand));
-    border-radius: 99px;
-    transition: width .5s cubic-bezier(.65,0,.35,1);
-  }
-  .dots { display: flex; justify-content: space-between; margin-top: 10px; }
-  .dot { font-size: 11px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: .08em; transition: color .3s; }
-  .dot.active { color: var(--ink); font-weight: 600; }
+  .progress-wrap { padding: 14px 32px 0; }
+  .progress { height: 2px; background: var(--border); overflow: hidden; }
+  .progress-bar { height: 100%; width: 20%; background: var(--brand); transition: width .5s cubic-bezier(.65,0,.35,1); }
+  .dots { display: flex; justify-content: space-between; margin-top: 12px; }
+  .dot { font-size: 10px; color: #6a6a6a; font-weight: 500; text-transform: uppercase; letter-spacing: .12em; transition: color .3s; }
+  .dot.active { color: var(--brand); }
   /* Pasos */
-  .steps { position: relative; padding: 28px; min-height: 380px; }
+  .steps { position: relative; padding: 32px; min-height: 380px; }
   .step { display: none; }
   .step.active { display: block; animation: slideIn .45s cubic-bezier(.22,1,.36,1) both; }
   .step.active.back { animation-name: slideInBack; }
@@ -71,25 +66,26 @@
     .step.active, .step.leaving { animation: none; }
     .step.leaving { display: none; }
   }
-  h2 { font-size: 26px; line-height: 1.2; font-weight: 600; letter-spacing: -.01em; margin-bottom: 6px; }
-  .sub { color: var(--muted); font-size: 15px; line-height: 1.5; margin-bottom: 24px; }
+  h2 { font-family: "Space Grotesk", "Jost", sans-serif; font-size: 26px; line-height: 1.2; font-weight: 600; letter-spacing: -.01em; margin-bottom: 8px; color: #fff; }
+  .sub { color: var(--muted); font-size: 15px; line-height: 1.5; margin-bottom: 28px; }
   /* Campos */
-  .field { margin-bottom: 18px; }
-  .field label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; }
-  .field .hint { font-weight: 400; color: var(--muted); font-size: 13px; }
+  .field { margin-bottom: 20px; }
+  .field label { display: block; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .12em; color: var(--label); margin-bottom: 10px; }
+  .field .hint { text-transform: none; letter-spacing: 0; color: #777; font-size: 12px; }
   .input-wrap { position: relative; }
   .input {
-    width: 100%; font: inherit; font-size: 16px;
-    padding: 14px 16px; border: 1.5px solid var(--border); border-radius: 12px;
-    background: #fff; color: var(--text); transition: border-color .2s, box-shadow .2s;
+    width: 100%; font: inherit; font-size: 17px;
+    padding: 15px 16px; border: 1px solid var(--border-strong); border-radius: var(--radius);
+    background: var(--field); color: var(--text); transition: border-color .2s;
   }
-  .input:focus { outline: none; border-color: var(--ink); box-shadow: 0 0 0 4px rgba(243,146,0,.1); }
+  .input::placeholder { color: #5c5c5c; }
+  .input:focus { outline: none; border-color: var(--brand); }
   .input.has-suffix { padding-right: 56px; }
-  .suffix { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--muted); font-weight: 600; pointer-events: none; }
+  .suffix { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 14px; pointer-events: none; }
   .input.invalid { border-color: var(--error); }
   .input[type=number]::-webkit-inner-spin-button, .input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
   .input[type=number] { -moz-appearance: textfield; }
-  .error-msg { color: var(--error); font-size: 13px; margin-top: 6px; display: none; }
+  .error-msg { color: var(--error); font-size: 12px; margin-top: 6px; display: none; }
   .error-msg.show { display: block; }
   /* Opciones (cards) */
   .options { display: grid; gap: 12px; }
@@ -98,140 +94,119 @@
   .option input { position: absolute; opacity: 0; pointer-events: none; }
   .option-card {
     display: flex; align-items: center; gap: 14px;
-    padding: 16px; border: 1.5px solid var(--border); border-radius: 14px;
-    transition: border-color .2s, background .2s, transform .15s, box-shadow .2s;
-    height: 100%;
+    padding: 15px 16px; border: 1px solid var(--border-strong); border-radius: var(--radius);
+    background: var(--field); transition: border-color .2s; height: 100%;
   }
-  .option:hover .option-card { border-color: var(--ink); transform: translateY(-1px); }
-  .option input:checked + .option-card {
-    border-color: var(--brand); background: rgba(243,146,0,.07);
-    box-shadow: 0 0 0 3px rgba(243,146,0,.1);
-  }
-  .option input:focus-visible + .option-card { box-shadow: 0 0 0 3px rgba(243,146,0,.3); }
-  .icon {
-    flex: 0 0 44px; height: 44px; border-radius: 12px; display: grid; place-items: center;
-    background: var(--bg); font-size: 22px;
-  }
-  .option-title { font-weight: 600; font-size: 15px; }
+  .option:hover .option-card { border-color: #6a6a6a; }
+  .option input:checked + .option-card { border-color: var(--brand); }
+  .option input:focus-visible + .option-card { outline: 1px solid var(--brand); outline-offset: 2px; }
+  .icon { display: none; }
+  .option-title { font-size: 16px; font-weight: 500; color: var(--text); }
   .option-desc { color: var(--muted); font-size: 13px; margin-top: 2px; line-height: 1.4; }
   .check {
-    margin-left: auto; flex: 0 0 22px; width: 22px; height: 22px; border-radius: 6px;
-    border: 1.5px solid var(--border); display: grid; place-items: center; transition: all .2s;
+    margin-left: auto; flex: 0 0 18px; width: 18px; height: 18px; border-radius: var(--radius);
+    border: 1px solid var(--border-strong); display: grid; place-items: center; transition: all .2s;
   }
   .option input[type=radio] + .option-card .check { border-radius: 50%; }
-  .option input:checked + .option-card .check { background: var(--brand); border-color: var(--brand); }
-  .check svg { width: 14px; height: 14px; stroke: var(--ink); opacity: 0; transition: opacity .2s; }
+  .option input:checked + .option-card .check { border-color: var(--brand); }
+  .check svg { width: 13px; height: 13px; stroke: var(--brand); opacity: 0; transition: opacity .2s; }
   .option input:checked + .option-card .check svg { opacity: 1; }
   /* Tarjeta vertical (terminación) */
   .option-card.vertical { flex-direction: column; align-items: flex-start; gap: 10px; padding: 20px; }
-  .option-card.vertical .check { position: absolute; top: 16px; right: 16px; }
-  .badge { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; padding: 4px 8px; border-radius: 99px; background: var(--ink); color: #fff; }
-  .badge.gold { background: var(--brand); color: var(--ink); }
-  .features { list-style: none; font-size: 13px; color: var(--muted); line-height: 1.7; }
-  .features li::before { content: "✓ "; color: var(--brand-2); font-weight: 700; }
+  .option-card.vertical .check { position: absolute; top: 18px; right: 18px; }
+  .badge { display: inline-block; font-size: 10px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--label); }
+  .badge.gold { color: var(--brand); }
+  .features { list-style: none; font-size: 14px; color: #cfcfcf; line-height: 1.8; }
+  .features li::before { content: "✓  "; color: var(--brand); }
   /* Grupos del paso 2 */
-  .group { margin-bottom: 18px; }
-  .group-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: 10px; }
+  .group { margin-bottom: 22px; }
+  .group-title { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .12em; color: var(--label); margin-bottom: 10px; }
   .seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
   .seg label { cursor: pointer; position: relative; }
   .seg input { position: absolute; opacity: 0; pointer-events: none; }
   .seg span {
     display: flex; flex-direction: column; justify-content: center; height: 100%;
-    padding: 12px 10px; border: 1.5px solid var(--border); border-radius: 12px;
-    text-align: center; font-weight: 600; font-size: 15px; transition: all .2s;
+    padding: 13px 10px; border: 1px solid var(--border-strong); border-radius: var(--radius);
+    background: var(--field); text-align: center; font-weight: 500; font-size: 15px; transition: border-color .2s, color .2s;
   }
   .seg small { display: block; font-weight: 400; font-size: 12px; color: var(--muted); margin-top: 2px; line-height: 1.3; }
-  .seg label:hover span { border-color: var(--ink); }
-  .seg input:checked + span { border-color: var(--brand); background: rgba(243,146,0,.07); box-shadow: 0 0 0 3px rgba(243,146,0,.1); }
-  .seg input:focus-visible + span { box-shadow: 0 0 0 3px rgba(243,146,0,.3); }
+  .seg label:hover span { border-color: #6a6a6a; }
+  .seg input:checked + span { border-color: var(--brand); color: var(--brand); }
+  .seg input:checked + span::before { content: "✓"; margin-bottom: 2px; }
+  .seg input:focus-visible + span { outline: 1px solid var(--brand); outline-offset: 2px; }
   .group .counter-row { margin-top: 0; }
   .group .counter-row + .counter-row, .group .option + .counter-row { margin-top: 10px; }
   /* Disclaimer */
   .disclaimer {
     display: flex; gap: 12px; align-items: flex-start;
-    background: rgba(243,146,0,.08); border: 1.5px solid rgba(243,146,0,.35); border-radius: 14px;
-    padding: 14px 16px; font-size: 14px; line-height: 1.5; margin-bottom: 20px;
+    border-left: 2px solid var(--brand); background: rgba(243,154,60,.06);
+    padding: 14px 16px; font-size: 14px; line-height: 1.55; margin-bottom: 20px; color: #d6d6d6;
   }
-  .disclaimer strong { display: block; margin-bottom: 2px; }
-  /* Contador A/C */
+  .disclaimer strong { display: block; margin-bottom: 2px; color: #fff; font-weight: 500; }
+  .disclaimer a { color: var(--brand); }
+  /* Contadores */
   .counter-row {
     display: flex; align-items: center; gap: 14px; margin-top: 12px;
-    padding: 16px; border: 1.5px solid var(--border); border-radius: 14px;
+    padding: 14px 16px; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--field);
   }
   .counter { margin-left: auto; display: flex; align-items: center; gap: 10px; }
   .counter button {
-    width: 36px; height: 36px; border-radius: 10px; border: 1.5px solid var(--border);
-    background: #fff; font-size: 20px; line-height: 1; cursor: pointer; color: var(--ink); transition: all .15s;
+    width: 34px; height: 34px; border-radius: var(--radius); border: 1px solid var(--border-strong);
+    background: transparent; font-size: 18px; line-height: 1; cursor: pointer; color: var(--text); transition: all .15s;
   }
-  .counter button:hover { border-color: var(--ink); background: var(--bg); }
-  .counter span { min-width: 22px; text-align: center; font-weight: 700; font-size: 17px; }
+  .counter button:hover { border-color: var(--brand); color: var(--brand); }
+  .counter span { min-width: 22px; text-align: center; font-family: "Space Grotesk", sans-serif; font-weight: 600; font-size: 18px; }
   /* Botones */
-  .actions { display: flex; gap: 12px; margin-top: 28px; }
+  .actions { display: flex; gap: 12px; margin-top: 32px; }
   .btn {
-    font: inherit; font-weight: 600; font-size: 16px; cursor: pointer;
-    padding: 15px 22px; border-radius: 12px; border: none; transition: all .2s;
+    font: inherit; font-weight: 500; font-size: 13px; text-transform: uppercase; letter-spacing: .14em; cursor: pointer;
+    padding: 16px 22px; border-radius: var(--radius); border: none; transition: all .2s;
     display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; text-align: center;
   }
-  .btn-primary { background: var(--brand); color: var(--ink); flex: 1; }
-  .btn-primary:hover { background: var(--brand-2); transform: translateY(-1px); box-shadow: 0 8px 20px rgba(243,146,0,.25); }
-  .btn-primary:disabled { opacity: .6; cursor: wait; transform: none; box-shadow: none; }
-  .btn-ghost { background: transparent; color: var(--muted); border: 1.5px solid var(--border); }
-  .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
-  .btn-cta { background: var(--brand); color: var(--ink); width: 100%; padding: 18px; font-size: 17px; }
-  .btn-cta:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(243,146,0,.3); }
-  .spinner { width: 18px; height: 18px; border: 2.5px solid rgba(0,0,0,.2); border-top-color: var(--ink); border-radius: 50%; animation: spin .7s linear infinite; display: none; }
+  .btn-primary { background: var(--brand); color: #141414; flex: 1; }
+  .btn-primary:hover { background: var(--brand-2); }
+  .btn-primary:disabled { opacity: .6; cursor: wait; }
+  .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border-strong); }
+  .btn-ghost:hover { color: var(--text); border-color: #6a6a6a; }
+  .btn-cta { background: var(--brand); color: #141414; width: 100%; padding: 19px; font-size: 14px; }
+  .btn-cta:hover { background: var(--brand-2); }
+  .spinner { width: 16px; height: 16px; border: 2px solid rgba(0,0,0,.25); border-top-color: #141414; border-radius: 50%; animation: spin .7s linear infinite; display: none; }
   .btn.loading .spinner { display: inline-block; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .privacy { font-size: 12px; color: var(--muted); margin-top: 14px; text-align: center; }
+  .privacy { font-size: 12px; color: #6f6f6f; margin-top: 16px; text-align: center; }
   /* Resultado */
-  .result-hero {
-    text-align: center; padding: 28px 20px; border-radius: 20px; margin: 8px 0 22px;
-    background: var(--ink); color: #fff;
-    border-bottom: 6px solid var(--brand);
-  }
-  .result-hero .eyebrow { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; opacity: .8; font-weight: 600; }
-  .result-range { font-size: clamp(26px, 6.5vw, 38px); font-weight: 800; margin: 10px 0 4px; letter-spacing: -.01em; }
-  .result-range .sep { color: var(--brand); margin: 0 6px; }
-  .result-hero .note { font-size: 13px; opacity: .8; }
-  .result-hero .shipping { margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.15); font-size: 15px; }
-  .result-hero .shipping strong { color: var(--brand); font-size: 18px; }
-  .result-hero .shipping small { display: block; opacity: .7; font-size: 12px; margin-top: 2px; }
-  .disclaimer a { color: var(--ink); font-weight: 600; }
-  .summary { border: 1.5px solid var(--border); border-radius: 14px; padding: 6px 18px; margin-bottom: 20px; }
+  .result-hero { padding: 24px 0 26px; margin: 4px 0 24px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  .result-hero .eyebrow { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--label); font-weight: 500; }
+  .result-range { font-family: "Space Grotesk", sans-serif; color: var(--brand); font-size: clamp(26px, 6.8vw, 38px); font-weight: 600; margin: 10px 0 4px; letter-spacing: -.01em; line-height: 1.15; }
+  .result-range .sep { margin: 0 8px; }
+  .result-hero .note { font-size: 12px; color: #777; }
+  .result-hero .shipping { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--label); }
+  .result-hero .shipping strong { display: block; font-family: "Space Grotesk", sans-serif; color: var(--text); font-size: 22px; font-weight: 600; letter-spacing: 0; text-transform: none; margin-top: 6px; }
+  .result-hero .shipping small { display: block; color: #777; font-size: 12px; letter-spacing: 0; text-transform: none; margin-top: 2px; }
+  .summary { margin-bottom: 22px; }
   .summary-row { display: flex; justify-content: space-between; gap: 12px; padding: 11px 0; font-size: 14px; border-bottom: 1px solid var(--border); }
-  .summary-row:last-child { border-bottom: none; }
-  .summary-row span:first-child { color: var(--muted); }
-  .summary-row span:last-child { font-weight: 600; text-align: right; }
-  .explain { font-size: 14px; color: var(--muted); line-height: 1.6; margin-bottom: 22px; }
-  .restart { display: block; margin: 14px auto 0; background: none; border: none; color: var(--muted); font: inherit; font-size: 14px; cursor: pointer; text-decoration: underline; }
+  .summary-row span:first-child { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .12em; align-self: center; }
+  .summary-row span:last-child { text-align: right; color: var(--text); }
+  .explain { font-size: 13px; color: #8a8a8a; line-height: 1.65; margin-bottom: 24px; }
+  .restart { display: block; margin: 16px auto 0; background: none; border: none; color: var(--muted); font: inherit; font-size: 12px; text-transform: uppercase; letter-spacing: .12em; cursor: pointer; text-decoration: underline; text-underline-offset: 4px; }
   @media (max-width: 520px) {
     body { padding: 0; }
-    .widget { border-radius: 0; box-shadow: none; }
+    .widget { border: none; }
     .header, .progress-wrap { padding-left: 20px; padding-right: 20px; }
-    .steps { padding: 24px 20px; }
+    .steps { padding: 26px 20px; }
     .options.two { grid-template-columns: 1fr; }
     .seg { grid-template-columns: 1fr; }
     .seg span { flex-direction: row; justify-content: space-between; align-items: center; text-align: left; gap: 10px; }
+    .seg input:checked + span::before { display: none; }
     .seg small { margin-top: 0; text-align: right; }
-    .dot { font-size: 9px; letter-spacing: .03em; }
-    .counter-row .icon { display: none; }
-    .counter-row { padding: 14px; }
-    .counter { gap: 8px; }
-    h2 { font-size: 21px; }
+    .dot { font-size: 8.5px; letter-spacing: .06em; }
+    h2 { font-size: 22px; }
   }
 </style>
 </head>
 <body>
 <div class="widget" id="liwa-widget">
   <div class="header">
-    <div class="logo" id="logo" aria-label="LIWA Módulos">
-      <svg viewBox="0 0 200 150" role="img" aria-hidden="true">
-        <path d="M8 46 L100 6 L192 46 L192 144 L8 144 Z" fill="#fff" stroke="#111" stroke-width="7" stroke-linejoin="round"/>
-        <text x="100" y="98" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="800" font-size="62" letter-spacing="-2" fill="#111" transform="scale(1,1.12) translate(0,-10)">LIWA</text>
-        <rect x="8" y="106" width="184" height="38" fill="#f39200" stroke="#111" stroke-width="7" stroke-linejoin="round"/>
-        <text x="100" y="134" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="800" font-size="22" letter-spacing="4" fill="#111">MÓDULOS</text>
-      </svg>
-    </div>
     <div class="step-label" id="stepLabel">Paso 1 de 5</div>
   </div>
   <div class="progress-wrap">
@@ -275,7 +250,7 @@
       <h2>¿Qué ambientes querés incluir?</h2>
       <p class="sub">Elegí las opciones para tu módulo.</p>
       <div class="group">
-        <div class="group-title">🛁 Baño</div>
+        <div class="group-title">Baño</div>
         <div class="seg">
           <label><input type="radio" name="bano" value="ninguno" checked /><span>Sin baño</span></label>
           <label><input type="radio" name="bano" value="completo" /><span>Completo<small>Ducha, sanitarios e instalaciones</small></span></label>
@@ -283,7 +258,7 @@
         </div>
       </div>
       <div class="group">
-        <div class="group-title">🍳 Cocina</div>
+        <div class="group-title">Cocina</div>
         <div class="seg">
           <label><input type="radio" name="cocina" value="ninguna" checked /><span>Sin cocina</span></label>
           <label><input type="radio" name="cocina" value="completa" /><span>Completa<small>Como para una casa, con muebles y mesada</small></span></label>
@@ -291,7 +266,7 @@
         </div>
       </div>
       <div class="group">
-        <div class="group-title">🏠 Ambientes y equipamiento</div>
+        <div class="group-title">Ambientes y equipamiento</div>
           <div class="counter-row">
             <div class="icon">🛏️</div>
             <div><div class="option-title">Dormitorios</div><div class="option-desc">Incluye placard</div></div>
@@ -358,8 +333,8 @@
           </div>
         </label>
       </div>
-      <div class="group" style="margin-top:24px">
-        <div class="group-title">🚚 Envío del módulo</div>
+      <div class="group" style="margin-top:28px;padding-top:24px;border-top:1px solid var(--border)">
+        <div class="group-title">Envío del módulo</div>
         <div class="field">
           <label for="localidad">Localidad del terreno</label>
           <input class="input" type="text" id="localidad" name="localidad" autocomplete="address-level2" placeholder="Ej: Pilar, Buenos Aires" />
@@ -411,14 +386,13 @@
       <h2 id="resultTitle">¡Listo!</h2>
       <p class="sub">Este es el rango estimado para tu proyecto.</p>
       <div class="result-hero">
-        <div class="eyebrow">Inversión estimada</div>
+        <div class="eyebrow">Inversión estimada · Rango USD</div>
         <div class="result-range" id="resultRange">—</div>
         <div class="note">Valores en dólares estadounidenses</div>
         <div class="shipping" id="resultShipping"></div>
       </div>
       <div class="summary" id="summary"></div>
       <div class="disclaimer">
-        <span>⚠️</span>
         <div><strong>Este valor no es un presupuesto oficial.</strong>
         Es una estimación orientativa calculada automáticamente. Para recibir tu presupuesto formal, <a href="#" target="_blank" rel="noopener" class="wa-link">escribinos por WhatsApp</a> y un asesor lo prepara según tu proyecto.</div>
       </div>
@@ -427,7 +401,7 @@
         El envío se cotiza aparte en pesos, ida y vuelta.
         El valor final puede variar según la ubicación del terreno, el diseño definitivo y la disponibilidad de materiales.
       </p>
-      <a class="btn btn-cta wa-link" id="ctaBtn" href="#" target="_blank" rel="noopener">💬 Agendar llamada para validar presupuesto</a>
+      <a class="btn btn-cta wa-link" id="ctaBtn" href="#" target="_blank" rel="noopener">Agendar llamada para validar presupuesto</a>
       <button type="button" class="restart" id="restartBtn">Hacer otra cotización</button>
     </section>
   </form>
@@ -440,7 +414,6 @@
      Todo se puede sobreescribir por parámetros en la URL del iframe:
        ?webhook=https://services.leadconnectorhq.com/hooks/XXXX/webhook-trigger/YYYY
        &cta=https://tu-dominio.com/agendar
-       &logo=https://tu-dominio.com/logo.png
      ===================================================================== */
   var params = new URLSearchParams(window.location.search);
   var CONFIG = {
@@ -448,8 +421,6 @@
     webhookUrl: params.get("webhook") || "https://services.leadconnectorhq.com/hooks/ggYd8ySRgfQGSsuS3a3A/webhook-trigger/7af71452-76c0-4f6e-86aa-f4477abc6dcc",
     // Número de WhatsApp del bot, solo dígitos con código de país (ej: 5491112345678)
     whatsappNumber: (params.get("wa") || "").replace(/\D/g, ""),
-    // URL del logo (PNG/SVG). Si queda vacío se usa el logo SVG incluido
-    logoUrl: params.get("logo") || "",
     source: params.get("source") || "Autopresupuestador LIWA"
   };
 
@@ -487,12 +458,6 @@
   var total = steps.length;
   var counts = { dorm: 0, ac: 0 };
 
-  if (CONFIG.logoUrl) {
-    var img = new Image();
-    img.alt = "LIWA Módulos";
-    img.onload = function () { var l = document.getElementById("logo"); l.innerHTML = ""; l.appendChild(img); };
-    img.src = CONFIG.logoUrl;
-  }
 
   /* ---------- Navegación ---------- */
   function goTo(n) {
@@ -703,9 +668,9 @@
   function renderResult(d, r, nombre, email, whatsapp) {
     document.getElementById("resultTitle").textContent = "¡Listo, " + nombre.split(/\s+/)[0] + "!";
     document.getElementById("resultRange").innerHTML =
-      "$" + r.rangoMin.toLocaleString("en-US") + '<span class="sep">–</span>$' + r.rangoMax.toLocaleString("en-US");
+      "USD " + r.rangoMin.toLocaleString("en-US") + '<span class="sep">—</span>USD ' + r.rangoMax.toLocaleString("en-US");
     document.getElementById("resultShipping").innerHTML =
-      "+ Envío: <strong>" + ars(r.envioArs) + "</strong><small>Ida y vuelta a " + esc(d.localidad) + " (" + d.km * 2 + " km)</small>";
+      "+ Envío (ARS) <strong>" + ars(r.envioArs) + "</strong><small>Ida y vuelta a " + esc(d.localidad) + " (" + d.km * 2 + " km)</small>";
     var rows = [
       ["Superficie cubierta", d.m2Cub + " m²"],
       ["Semicubierto / Galería", d.m2Semi + " m²"],

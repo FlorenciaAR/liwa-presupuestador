@@ -66,7 +66,6 @@ En el editor de la landing de GHL, agregar un elemento **Custom JS/HTML** (Códi
 | `src` base | La URL del paso 1 |
 | `webhook=` *(opcional)* | URL del Inbound Webhook, **codificada**. El webhook de LIWA ya viene configurado por defecto en `CONFIG.webhookUrl`; este parámetro solo hace falta para usar otro |
 | `wa=` | Número de WhatsApp del bot, con código de país y sin espacios ni `+` (ej: `5491112345678`). También se puede fijar en `CONFIG.whatsappNumber` |
-| `logo=` *(opcional)* | URL de un PNG/SVG para reemplazar el logo incluido |
 
 Para codificar una URL, en la consola del navegador (F12): `encodeURIComponent("https://services.leadconnectorhq.com/hooks/...")`.
 
@@ -78,7 +77,7 @@ https://florenciaar.github.io/liwa-presupuestador/?wa=5491112345678
 
 El script incluido en `embed-ghl.html` ajusta el alto del iframe en cada paso, así no aparecen barras de scroll.
 
-> Si prefieren no usar parámetros en la URL, pueden escribir los valores directamente en el objeto `CONFIG` de `index.html` (`webhookUrl`, `ctaUrl`, `logoUrl`).
+> Si prefieren no usar parámetros en la URL, pueden escribir los valores directamente en el objeto `CONFIG` de `index.html` (`webhookUrl`, `whatsappNumber`).
 
 ### Qué datos se envían
 
@@ -127,6 +126,6 @@ El botón "Agendar llamada" (y el link "escribinos por WhatsApp" del disclaimer)
 
 ## Personalizar
 
-- **Colores:** las variables CSS en `:root` al principio de `index.html` (`--brand` naranja, `--ink` negro).
+- **Colores:** las variables CSS en `:root` al principio de `index.html` (tema oscuro: `--brand` naranja, `--bg`, `--card`, `--field`, `--border`). Tipografías: Jost (textos) y Space Grotesk (títulos y precios).
 - **Textos y precios:** directamente en el HTML y en `PRICING`.
 - **Probar localmente:** abrir `index.html` en el navegador. Sin webhook configurado, el envío se simula y se ve en la consola.
