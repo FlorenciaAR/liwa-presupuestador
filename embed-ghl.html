@@ -3,6 +3,8 @@
   Reemplazá:
     - NUMERO_WHATSAPP → número del bot con código de país, sin + ni espacios (ej: 5491112345678).
   El webhook de GHL ya está configurado dentro del widget.
+  Requisito para Meta: el Píxel de Meta tiene que estar instalado en la landing
+  (GHL: Settings → Tracking Code / o en el Header de la página).
 -->
 <iframe
   id="liwa-presupuestador"
@@ -13,12 +15,68 @@
   allow="clipboard-write"
 ></iframe>
 <script>
-  // Ajusta el alto del iframe automáticamente según el paso actual
+(function () {
+  var ORIGEN = "https://florenciaar.github.io";
+  var frame = document.getElementById("liwa-presupuestador");
+  var iniciado = false;
+
+  function cookie(nombre) {
+    var m = document.cookie.match(new RegExp("(?:^|; )" + nombre + "=([^;]*)"));
+    return m ? decodeURIComponent(m[1]) : "";
+  }
+
+  // Datos web de la landing que el iframe no puede leer por sí mismo
+  function contexto() {
+    var q = new URLSearchParams(window.location.search);
+    var fbclid = q.get("fbclid") || "";
+    var data = {
+      fbp: cookie("_fbp"),
+      fbc: cookie("_fbc") || (fbclid ? "fb.1." + Date.now() + "." + fbclid : ""),
+      fbclid: fbclid,
+      page_url: window.location.href,
+      referrer: document.referrer
+    };
+    ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"].forEach(function (k) {
+      if (q.get(k)) data[k] = q.get(k);
+    });
+    return data;
+  }
+
+  function enviarContexto() {
+    if (frame && frame.contentWindow) frame.contentWindow.postMessage({ type: "liwa:context", data: contexto() }, ORIGEN);
+  }
+  frame.addEventListener("load", enviarContexto);
+
+  function pixel() { return typeof window.fbq === "function" ? window.fbq : null; }
+
   window.addEventListener("message", function (e) {
+    if (e.origin !== ORIGEN) return;
     var d = e.data || {};
-    var f = document.getElementById("liwa-presupuestador");
-    if (!f) return;
-    if (d.type === "liwa:height" && d.height) f.style.height = (d.height + 10) + "px";
-    // if (d.type === "liwa:lead") { /* p.ej. disparar un píxel de Meta: fbq('track','Lead'); */ }
+
+    // Alto automático del iframe
+    if (d.type === "liwa:height" && d.height) frame.style.height = (d.height + 10) + "px";
+
+    // El iframe está listo: le pasamos _fbp, _fbc, URL y UTMs
+    if (d.type === "liwa:ready") enviarContexto();
+
+    // Primer avance de paso: el usuario empezó a cotizar
+    if (d.type === "liwa:step" && d.step === 2 && !iniciado) {
+      iniciado = true;
+      if (pixel()) pixel()("trackCustom", "PresupuestadorIniciado");
+    }
+
+    // Lead enviado: evento Lead con el mismo event_id que va al webhook (deduplicación con la API de Conversiones)
+    if (d.type === "liwa:lead" && d.payload) {
+      var p = d.payload;
+      if (pixel()) {
+        pixel()("track", "Lead",
+          { value: p.value, currency: p.currency, content_name: "Presupuestador LIWA", content_category: p.terminacion },
+          { eventID: p.event_id });
+      }
+    }
+
+    // Clic en "Agendar llamada" (WhatsApp)
+    if (d.type === "liwa:cta" && pixel()) pixel()("track", "Contact");
   });
+})();
 </script>

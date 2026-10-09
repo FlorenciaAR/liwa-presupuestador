@@ -85,7 +85,7 @@ Cuando el usuario envía el paso 4, el widget:
 
 1. Hace `console.log` del lead.
 2. Hace un `POST` JSON a la URL del webhook. Si el navegador bloquea la petición por CORS, la reintenta en modo `no-cors` (GHL la recibe igual). Al usuario nunca se lo hace esperar más de 6 segundos.
-3. Emite un `postMessage` `{ type: "liwa:lead", payload }` a la página padre (sirve, por ejemplo, para disparar el píxel de Meta `fbq('track','Lead')` desde la landing).
+3. Emite un `postMessage` `{ type: "liwa:lead", payload }` a la página padre, que dispara el Píxel de Meta (ver más abajo).
 
 Payload de ejemplo:
 
@@ -124,6 +124,33 @@ Payload de ejemplo:
 ```
 
 El botón "Agendar llamada" (y el link "escribinos por WhatsApp" del disclaimer) abre un chat de WhatsApp con el bot, con un mensaje precargado que incluye nombre, rango en USD, envío, m², terminación y localidad.
+
+## Eventos de Meta (Píxel + API de Conversiones)
+
+El iframe está en otro dominio (`github.io`), así que no puede leer las cookies de Meta de la landing. Por eso el script de [`embed-ghl.html`](embed-ghl.html) hace de puente:
+
+1. **Landing → iframe:** al cargar, le pasa al iframe `_fbp`, `_fbc` (o lo arma desde el `fbclid` del anuncio), la URL de la página, el referrer y las UTMs.
+2. **Iframe → webhook:** al enviar el formulario, todo eso viaja en el webhook junto con un `event_id` único, `event_time`, `client_user_agent`, `value` (precio estimado) y `currency` (USD).
+3. **Iframe → landing → Píxel:** la landing dispara `fbq('track', 'Lead', {value, currency}, {eventID: event_id})`.
+
+Como el Píxel y el webhook comparten el mismo `event_id`, Meta **deduplica** el Lead si también lo mandan por la API de Conversiones.
+
+Eventos del Píxel:
+
+| Evento | Cuándo |
+|---|---|
+| `PresupuestadorIniciado` (custom) | El usuario pasa del paso 1 al 2 |
+| `Lead` | Envía sus datos (con `value` en USD y `eventID`) |
+| `Contact` | Hace clic en "Agendar llamada" (WhatsApp) |
+
+**Requisitos en GHL:**
+- El **Píxel de Meta** tiene que estar instalado en la landing (*Settings → Tracking Code*, o en el header de la página). Sin el Píxel, el script no falla: simplemente no dispara eventos.
+- **API de Conversiones** *(opcional, recomendado)*: en el Workflow del webhook, agregar la acción **Facebook Conversion API** (o un webhook saliente a Meta) con:
+  - Event name `Lead`, Event ID → `event_id`, Event time → `event_time`, Event source URL → `event_source_url`, Action source `website`.
+  - User data: email, phone y nombre del contacto, `fbp`, `fbc` y `client_user_agent`.
+  - Custom data: `value` y `currency`.
+
+Campos que llegan al webhook para esto: `event_name`, `event_id`, `event_time`, `event_source_url`, `fbp`, `fbc`, `fbclid`, `client_user_agent`, `referrer`, `utm_source`, `utm_medium`, `utm_campaign`, `utm_content`, `utm_term`, `value`, `currency`.
 
 ## Personalizar
 

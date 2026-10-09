@@ -459,6 +459,29 @@
   var counts = { dorm: 0, ac: 0 };
 
 
+  /* ---------- Datos web para Meta (los envía la landing que contiene el iframe) ---------- */
+  var webCtx = {};
+  ["fbclid", "utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"].forEach(function (k) {
+    if (params.get(k)) webCtx[k] = params.get(k);
+  });
+  window.addEventListener("message", function (e) {
+    var m = e.data || {};
+    if (e.source !== window.parent || m.type !== "liwa:context" || typeof m.data !== "object") return;
+    Object.keys(m.data).forEach(function (k) {
+      var v = m.data[k];
+      if (typeof v === "string" && v && v.length < 2000) webCtx[k] = v;
+    });
+  });
+  try { window.parent.postMessage({ type: "liwa:ready" }, "*"); } catch (e) {}
+
+  function nuevoEventId() {
+    if (window.crypto && crypto.randomUUID) return "liwa-" + crypto.randomUUID();
+    return "liwa-" + Date.now() + "-" + Math.random().toString(36).slice(2, 10);
+  }
+
+  // _fbc a partir del fbclid, si la landing no tenía la cookie
+  function fbcDesde(fbclid) { return fbclid ? "fb.1." + Date.now() + "." + fbclid : ""; }
+
   /* ---------- Navegación ---------- */
   function goTo(n) {
     if (n === current || n < 1 || n > total) return;
@@ -675,6 +698,7 @@
     var email = document.getElementById("email").value.trim();
     var whatsapp = document.getElementById("whatsapp").value.trim();
     var partes = nombre.split(/\s+/);
+    var eventId = nuevoEventId();
 
     var payload = {
       // Campos estándar de contacto de GHL
@@ -706,8 +730,25 @@
       envio_ars: r.envioArs,
       envio_texto: ars(r.envioArs) + " (ida y vuelta, " + d.km * 2 + " km)",
       presupuesto_detallado: presupuestoDetallado(d, r, { nombre: nombre, email: email, whatsapp: whatsapp }),
-      pagina: document.referrer || window.location.href,
-      fecha: new Date().toISOString()
+      pagina: webCtx.page_url || document.referrer || window.location.href,
+      fecha: new Date().toISOString(),
+      // Datos web para Meta (Conversions API desde GHL; deduplica con el Píxel por event_id)
+      event_name: "Lead",
+      event_id: eventId,
+      event_time: Math.floor(Date.now() / 1000),
+      event_source_url: webCtx.page_url || document.referrer || window.location.href,
+      fbp: webCtx.fbp || "",
+      fbc: webCtx.fbc || fbcDesde(webCtx.fbclid),
+      fbclid: webCtx.fbclid || "",
+      client_user_agent: navigator.userAgent,
+      referrer: webCtx.referrer || "",
+      utm_source: webCtx.utm_source || "",
+      utm_medium: webCtx.utm_medium || "",
+      utm_campaign: webCtx.utm_campaign || "",
+      utm_content: webCtx.utm_content || "",
+      utm_term: webCtx.utm_term || "",
+      value: r.precioEstimado,
+      currency: "USD"
     };
 
     sendWebhook(payload).then(function () {
