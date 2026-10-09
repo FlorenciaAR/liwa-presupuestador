@@ -53,7 +53,7 @@ Un iframe necesita una URL pública. La opción gratuita más simple es **GitHub
    - Email → `email`
    - Phone → `phone`
    - Source → `source`
-5. *(Recomendado)* Crear campos personalizados del contacto (*Settings → Custom Fields*) y mapearlos: `rango_texto`, `precio_estimado_usd`, `rango_min_usd`, `rango_max_usd`, `m2_cubiertos`, `m2_semicubiertos`, `ambientes`, `bano`, `cocina`, `dormitorios`, `living`, `aires_acondicionados`, `terminacion`, `localidad`, `distancia_km`, `envio_ars`, `envio_texto`.
+5. *(Recomendado)* Crear campos personalizados del contacto (*Settings → Custom Fields*) y mapearlos: `rango_texto`, `precio_estimado_usd`, `rango_min_usd`, `rango_max_usd`, `m2_cubiertos`, `m2_semicubiertos`, `ambientes`, `bano`, `cocina`, `dormitorios`, `living`, `aires_acondicionados`, `terminacion`, `localidad`, `distancia_km`, `envio_ars`, `envio_texto` y `presupuesto_detallado` (este último como campo de tipo **texto largo / multi line**: trae los datos de la persona y el presupuesto completo, línea por línea, listo para pegar en una nota, un email o un mensaje).
 6. Agregar las acciones que quieran: **Add Tag** (`presupuestador`), crear una oportunidad en el pipeline, enviar un WhatsApp o email con el `rango_texto`, notificar al equipo, etc.
 7. **Publicar** el workflow.
 
@@ -110,6 +110,7 @@ Payload de ejemplo:
   "distancia_km": 120,
   "envio_ars": 1680000,
   "envio_texto": "ARS 1.680.000 (ida y vuelta, 240 km)",
+  "presupuesto_detallado": "PRESUPUESTO ESTIMADO - LIWA MÓDULOS\nFecha: ...\n\nDATOS DEL CLIENTE\nNombre: ...\n...\n\nDETALLE EN USD (incluye terminación Standard)\n- Superficie cubierta (45 m²): $23,625 USD\n...",
   "aires_acondicionados": 1,
   "terminacion": "Standard",
   "costo_base_usd": 26010,

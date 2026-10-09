@@ -418,7 +418,7 @@
   var params = new URLSearchParams(window.location.search);
   var CONFIG = {
     // URL del "Inbound Webhook" de un Workflow de GoHighLevel
-    webhookUrl: params.get("webhook") || "https://services.leadconnectorhq.com/hooks/ggYd8ySRgfQGSsuS3a3A/webhook-trigger/7af71452-76c0-4f6e-86aa-f4477abc6dcc",
+    webhookUrl: params.get("webhook") || "https://services.leadconnectorhq.com/hooks/ggYd8ySRgfQGSsuS3a3A/webhook-trigger/7013d7cf-7d08-4ffd-8419-79b022d47ce9",
     // Número de WhatsApp del bot, solo dígitos con código de país (ej: 5491112345678)
     whatsappNumber: (params.get("wa") || "").replace(/\D/g, ""),
     source: params.get("source") || "Autopresupuestador LIWA"
@@ -585,6 +585,58 @@
     };
   }
 
+  /* Texto largo con el presupuesto detallado (para GHL). Cada línea ya incluye
+     terminación y margen, así la suma da el precio estimado que ve el cliente. */
+  function presupuestoDetallado(d, r, c) {
+    var P = PRICING;
+    var k = (P.terminacion[d.terminacion] || 1) * P.margen;
+    var plural = function (n, uno, varios) { return n + " " + (n === 1 ? uno : varios); };
+    var items = [
+      ["Superficie cubierta (" + d.m2Cub + " m²)", d.m2Cub * P.m2Cubierto * k],
+      ["Semicubierto / Galería (" + d.m2Semi + " m²)", d.m2Semi * P.m2Semi * k],
+      [LABELS.bano[d.bano], P.bano[d.bano] * k],
+      [LABELS.cocina[d.cocina], P.cocina[d.cocina] * k],
+      ["Dormitorios con placard (x" + d.dormitorios + ")", d.dormitorios * P.dormitorio * k],
+      ["Living con cortinas y lámpara de techo (" + P.livingM2 + " m²)", d.living ? P.livingM2 * P.m2Cubierto * k : 0],
+      ["Aire acondicionado / Calefacción (x" + d.acUnidades + ")", d.acUnidades * P.acUnidad * k],
+      ["Mano de obra y costos fijos", P.baseFija * P.margen]
+    ].filter(function (i) { return i[1] > 0; });
+    var detalleTerm = d.terminacion === "premium"
+      ? "Aberturas PVC con DVH, Wall Panels, Porcelanato"
+      : "Aberturas de aluminio, interiores en Durlock, pisos cerámicos";
+    return [
+      "PRESUPUESTO ESTIMADO - LIWA MÓDULOS",
+      "Fecha: " + new Date().toLocaleDateString("es-AR"),
+      "",
+      "DATOS DEL CLIENTE",
+      "Nombre: " + c.nombre,
+      "Email: " + c.email,
+      "WhatsApp: " + c.whatsapp,
+      "Localidad del terreno: " + d.localidad,
+      "",
+      "PROYECTO",
+      "Superficie cubierta: " + d.m2Cub + " m²",
+      "Semicubierto / Galería: " + d.m2Semi + " m²",
+      "Baño: " + LABELS.bano[d.bano],
+      "Cocina: " + LABELS.cocina[d.cocina],
+      "Dormitorios con placard: " + d.dormitorios,
+      "Living (cortinas y lámpara de techo): " + (d.living ? "Sí" : "No"),
+      "Aire acondicionado / Calefacción: " + plural(d.acUnidades, "equipo", "equipos"),
+      "Terminación: " + LABELS.terminacion[d.terminacion] + " (" + detalleTerm + ")",
+      "",
+      "DETALLE EN USD (incluye terminación " + LABELS.terminacion[d.terminacion] + ")"
+    ].concat(items.map(function (i) { return "- " + i[0] + ": " + usd(Math.round(i[1])); }), [
+      "Precio estimado: " + usd(r.precioEstimado),
+      "Rango estimado: " + usd(r.rangoMin) + " - " + usd(r.rangoMax),
+      "",
+      "ENVÍO (ARS, ida y vuelta)",
+      "Destino: " + d.localidad + " - " + d.km + " km de ida (" + d.km * 2 + " km ida y vuelta)",
+      "Costo de envío: " + ars(r.envioArs) + (r.envioArs === P.envioMinimoArs ? " (mínimo)" : ""),
+      "",
+      "Este valor es una estimación orientativa y no constituye un presupuesto oficial."
+    ]).join("\n");
+  }
+
   function roundNice(v) { return Math.round(v / 100) * 100; } // redondeo a centenas
   function ars(v) { return "ARS " + Math.round(v).toLocaleString("es-AR"); }
   function esc(t) { return String(t).replace(/[&<>"']/g, function (c) { return "&#" + c.charCodeAt(0) + ";"; }); }
@@ -653,6 +705,7 @@
       distancia_km: d.km,
       envio_ars: r.envioArs,
       envio_texto: ars(r.envioArs) + " (ida y vuelta, " + d.km * 2 + " km)",
+      presupuesto_detallado: presupuestoDetallado(d, r, { nombre: nombre, email: email, whatsapp: whatsapp }),
       pagina: document.referrer || window.location.href,
       fecha: new Date().toISOString()
     };
