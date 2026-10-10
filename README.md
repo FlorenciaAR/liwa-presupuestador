@@ -24,7 +24,7 @@ Ambientes:
 
 Terminación: Standard ×1.0 · Premium ×1.35.
 
-**Envío** (en ARS, se muestra aparte del rango en USD, sin margen): ida y vuelta, el mayor entre **ARS 1.300.000** y **ARS 7.000 × km**. El cliente carga los km de ida y se multiplican por 2. Ej.: 120 km → 240 km × 7.000 = ARS 1.680.000; 50 km → 100 km × 7.000 = ARS 700.000, por lo que se aplica el mínimo de ARS 1.300.000.
+**Envío** (en ARS, se muestra aparte del rango en USD, sin margen): **km de ida × ARS 7.000**, con un **mínimo de 200 km** (ARS 1.400.000). Ej.: 300 km → ARS 2.100.000; 120 km → se cobran 200 km = ARS 1.400.000. Se configura en `PRICING.envioKmMinimo` y `PRICING.envioArsPorKm`.
 
 Ejemplo: 45 m² cubiertos + 12 m² de semicubierto, baño completo + cocina completa, 1 equipo de A/C, Standard → **$37,100 – $44,900 USD**.
 
@@ -108,8 +108,8 @@ Payload de ejemplo:
   "living": "No",
   "localidad": "Pilar, Buenos Aires",
   "distancia_km": 120,
-  "envio_ars": 1680000,
-  "envio_texto": "ARS 1.680.000 (ida y vuelta, 240 km)",
+  "envio_ars": 1400000,
+  "envio_texto": "ARS 1.400.000 (200 km × ARS 7.000, mínimo 200 km)",
   "presupuesto_detallado": "PRESUPUESTO ESTIMADO - LIWA MÓDULOS\nFecha: ...\n\nDATOS DEL CLIENTE\nNombre: ...\n...\n\nDETALLE EN USD (incluye terminación Standard)\n- Superficie cubierta (45 m²): $23,625 USD\n...",
   "aires_acondicionados": 1,
   "terminacion": "Standard",

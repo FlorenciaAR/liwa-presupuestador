@@ -341,7 +341,7 @@
           <div class="error-msg" id="errLocalidad">Ingresá la localidad del terreno.</div>
         </div>
         <div class="field">
-          <label for="km">Distancia aproximada <span class="hint">· solo ida, desde nuestra planta</span></label>
+          <label for="km">Distancia aproximada <span class="hint">· desde nuestra planta</span></label>
           <div class="input-wrap">
             <input class="input has-suffix" type="number" id="km" name="km" min="0" max="5000" step="1" inputmode="numeric" placeholder="Ej: 120" />
             <span class="suffix">km</span>
@@ -398,7 +398,7 @@
       </div>
       <p class="explain">
         El rango se basa en la superficie, los ambientes y el nivel de terminación elegidos, e incluye materiales y mano de obra.
-        El envío se cotiza aparte en pesos, ida y vuelta.
+        El envío se cotiza aparte en pesos.
         El valor final puede variar según la ubicación del terreno, el diseño definitivo y la disponibilidad de materiales.
       </p>
       <a class="btn btn-cta wa-link" id="ctaBtn" href="https://wa.me/message/B72UP4I5PXSIB1" target="_blank" rel="noopener">Agendar llamada para validar presupuesto</a>
@@ -437,8 +437,8 @@
     margen: 1.5,
     rangoMin: 0.95,
     rangoMax: 1.15,
-    // Envío en ARS, ida y vuelta: el mayor entre el mínimo y (km ida × 2 × precio por km)
-    envioMinimoArs: 1300000,
+    // Envío en ARS: km de ida (mínimo 200 km) × precio por km
+    envioKmMinimo: 200,
     envioArsPorKm: 7000
   };
 
@@ -604,7 +604,8 @@
       precioEstimado: Math.round(precio),
       rangoMin: roundNice(precio * P.rangoMin),
       rangoMax: roundNice(precio * P.rangoMax),
-      envioArs: Math.max(P.envioMinimoArs, d.km * 2 * P.envioArsPorKm)
+      envioKm: Math.max(P.envioKmMinimo, d.km),
+      envioArs: Math.max(P.envioKmMinimo, d.km) * P.envioArsPorKm
     };
   }
 
@@ -652,9 +653,9 @@
       "Precio estimado: " + usd(r.precioEstimado),
       "Rango estimado: " + usd(r.rangoMin) + " - " + usd(r.rangoMax),
       "",
-      "ENVÍO (ARS, ida y vuelta)",
-      "Destino: " + d.localidad + " - " + d.km + " km de ida (" + d.km * 2 + " km ida y vuelta)",
-      "Costo de envío: " + ars(r.envioArs) + (r.envioArs === P.envioMinimoArs ? " (mínimo)" : ""),
+      "ENVÍO (ARS)",
+      "Destino: " + d.localidad + " - " + d.km + " km",
+      "Costo de envío: " + ars(r.envioArs) + " (" + r.envioKm + " km × " + ars(P.envioArsPorKm) + (d.km < P.envioKmMinimo ? ", mínimo " + P.envioKmMinimo + " km" : "") + ")",
       "",
       "Este valor es una estimación orientativa y no constituye un presupuesto oficial."
     ]).join("\n");
@@ -728,7 +729,7 @@
       localidad: d.localidad,
       distancia_km: d.km,
       envio_ars: r.envioArs,
-      envio_texto: ars(r.envioArs) + " (ida y vuelta, " + d.km * 2 + " km)",
+      envio_texto: ars(r.envioArs) + " (" + r.envioKm + " km × " + ars(PRICING.envioArsPorKm) + (d.km < PRICING.envioKmMinimo ? ", mínimo " + PRICING.envioKmMinimo + " km" : "") + ")",
       presupuesto_detallado: presupuestoDetallado(d, r, { nombre: nombre, email: email, whatsapp: whatsapp }),
       pagina: webCtx.page_url || document.referrer || window.location.href,
       fecha: new Date().toISOString(),
@@ -764,7 +765,7 @@
     document.getElementById("resultRange").innerHTML =
       "USD " + r.rangoMin.toLocaleString("en-US") + '<span class="sep">—</span>USD ' + r.rangoMax.toLocaleString("en-US");
     document.getElementById("resultShipping").innerHTML =
-      "+ Envío (ARS) <strong>" + ars(r.envioArs) + "</strong><small>Ida y vuelta a " + esc(d.localidad) + " (" + d.km * 2 + " km)</small>";
+      "+ Envío (ARS) <strong>" + ars(r.envioArs) + "</strong><small>" + esc(d.localidad) + " · " + d.km + " km" + (d.km < PRICING.envioKmMinimo ? " (se cobra el mínimo de " + PRICING.envioKmMinimo + " km)" : "") + "</small>";
     var rows = [
       ["Superficie cubierta", d.m2Cub + " m²"],
       ["Semicubierto / Galería", d.m2Semi + " m²"],
