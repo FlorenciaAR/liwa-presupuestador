@@ -65,19 +65,19 @@ En el editor de la landing de GHL, agregar un elemento **Custom JS/HTML** (Códi
 |---|---|
 | `src` base | La URL del paso 1 |
 | `webhook=` *(opcional)* | URL del Inbound Webhook, **codificada**. El webhook de LIWA ya viene configurado por defecto en `CONFIG.webhookUrl`; este parámetro solo hace falta para usar otro |
-| `wa=` | Número de WhatsApp del bot, con código de país y sin espacios ni `+` (ej: `5491112345678`). También se puede fijar en `CONFIG.whatsappNumber` |
+| `walink=` *(opcional)* | Otro link de WhatsApp para el botón final. Por defecto usa `https://wa.me/message/B72UP4I5PXSIB1` (`CONFIG.whatsappLink`) |
 
 Para codificar una URL, en la consola del navegador (F12): `encodeURIComponent("https://services.leadconnectorhq.com/hooks/...")`.
 
 Ejemplo final:
 
 ```
-https://florenciaar.github.io/liwa-presupuestador/?wa=5491112345678
+https://florenciaar.github.io/liwa-presupuestador/
 ```
 
 El script incluido en `embed-ghl.html` ajusta el alto del iframe en cada paso, así no aparecen barras de scroll.
 
-> Si prefieren no usar parámetros en la URL, pueden escribir los valores directamente en el objeto `CONFIG` de `index.html` (`webhookUrl`, `whatsappNumber`).
+> Si prefieren no usar parámetros en la URL, pueden escribir los valores directamente en el objeto `CONFIG` de `index.html` (`webhookUrl`, `whatsappLink`).
 
 ### Qué datos se envían
 
@@ -123,7 +123,7 @@ Payload de ejemplo:
 }
 ```
 
-El botón "Agendar llamada" (y el link "escribinos por WhatsApp" del disclaimer) abre un chat de WhatsApp con el bot, con un mensaje precargado que incluye nombre, rango en USD, envío, m², terminación y localidad.
+El botón "Agendar llamada" (y el link "escribinos por WhatsApp" del disclaimer) abre el link de WhatsApp del bot (`https://wa.me/message/B72UP4I5PXSIB1`). El mensaje inicial de ese link se configura en WhatsApp Business.
 
 ## Eventos de Meta (Píxel + API de Conversiones)
 

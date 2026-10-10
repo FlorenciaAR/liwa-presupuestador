@@ -394,14 +394,14 @@
       <div class="summary" id="summary"></div>
       <div class="disclaimer">
         <div><strong>Este valor no es un presupuesto oficial.</strong>
-        Es una estimación orientativa calculada automáticamente. Para recibir tu presupuesto formal, <a href="#" target="_blank" rel="noopener" class="wa-link">escribinos por WhatsApp</a> y un asesor lo prepara según tu proyecto.</div>
+        Es una estimación orientativa calculada automáticamente. Para recibir tu presupuesto formal, <a href="https://wa.me/message/B72UP4I5PXSIB1" target="_blank" rel="noopener" class="wa-link">escribinos por WhatsApp</a> y un asesor lo prepara según tu proyecto.</div>
       </div>
       <p class="explain">
         El rango se basa en la superficie, los ambientes y el nivel de terminación elegidos, e incluye materiales y mano de obra.
         El envío se cotiza aparte en pesos, ida y vuelta.
         El valor final puede variar según la ubicación del terreno, el diseño definitivo y la disponibilidad de materiales.
       </p>
-      <a class="btn btn-cta wa-link" id="ctaBtn" href="#" target="_blank" rel="noopener">Agendar llamada para validar presupuesto</a>
+      <a class="btn btn-cta wa-link" id="ctaBtn" href="https://wa.me/message/B72UP4I5PXSIB1" target="_blank" rel="noopener">Agendar llamada para validar presupuesto</a>
       <button type="button" class="restart" id="restartBtn">Hacer otra cotización</button>
     </section>
   </form>
@@ -419,8 +419,8 @@
   var CONFIG = {
     // URL del "Inbound Webhook" de un Workflow de GoHighLevel
     webhookUrl: params.get("webhook") || "https://services.leadconnectorhq.com/hooks/ggYd8ySRgfQGSsuS3a3A/webhook-trigger/1513c4d7-3d04-4881-a604-366072d9992e",
-    // Número de WhatsApp del bot, solo dígitos con código de país (ej: 5491112345678)
-    whatsappNumber: (params.get("wa") || "").replace(/\D/g, ""),
+    // Link de WhatsApp del bot (botón final y link del disclaimer)
+    whatsappLink: params.get("walink") || "https://wa.me/message/B72UP4I5PXSIB1",
     source: params.get("source") || "Autopresupuestador LIWA"
   };
 
@@ -777,14 +777,7 @@
       return '<div class="summary-row"><span>' + row[0] + "</span><span>" + row[1] + "</span></div>";
     }).join("");
 
-    var msg = "Hola! Soy " + nombre + ". Hice el presupuesto online y me dio " +
-      usd(r.rangoMin) + " - " + usd(r.rangoMax) + " + envío " + ars(r.envioArs) + " (" + d.m2Cub + " m² cubiertos, " +
-      LABELS.terminacion[d.terminacion] + ", " + d.localidad + "). Quiero agendar una llamada para validarlo.";
-    var waUrl = CONFIG.whatsappNumber
-      ? "https://wa.me/" + CONFIG.whatsappNumber + "?text=" + encodeURIComponent(msg)
-      : "#";
-    if (!CONFIG.whatsappNumber) console.warn("[LIWA] Falta el número de WhatsApp (CONFIG.whatsappNumber o ?wa=).");
-    document.querySelectorAll(".wa-link").forEach(function (a) { a.href = waUrl; });
+    document.querySelectorAll(".wa-link").forEach(function (a) { a.href = CONFIG.whatsappLink; });
   }
 
   document.getElementById("ctaBtn").addEventListener("click", function () {
